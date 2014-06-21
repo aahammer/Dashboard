@@ -32,17 +32,29 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
             # Init basic svg components according to settings
             svg = d3.select("#"+id).append('svg')
             .attr('width', '100%')
-            .attr('height', '50%')
+            .attr('height', '40%')
             frame = angular.element("#"+id)
 
+            scale ={}
+            scale['x'] =  d3.scale.linear()
+                    .domain([0,10])
+                    .range([0,frame.width() - margin.left - margin.right - padding.left])
+            scale['y'] = d3.scale.ordinal()
+                .rangeRoundBands([0, frame.height() - margin.top - margin.bottom - padding.bottom ],0.5,0.25)
+            g = {}
+            g['x'] = svg.append('g').attr('transform', _translate(margin.left + padding.left, frame.height() - margin.bottom)).attr('class', 'axis')
+            g['y'] = svg.append('g').attr('transform', _translate(margin.left, margin.top)).attr('class', 'axis')
+
+            ###
             valueScale = d3.scale.linear()
-            .domain([0,10])
-            .range([0,frame.width() - margin.left - margin.right - padding.left])
+                .domain([0,10])
+                .range([0,frame.width() - margin.left - margin.right - padding.left])
             categoryScale = d3.scale.ordinal()
-            .rangeRoundBands([0, frame.height() - margin.top - margin.bottom - padding.bottom ],0.5,0.25)
+                .rangeRoundBands([0, frame.height() - margin.top - margin.bottom - padding.bottom ],0.5,0.25)
 
             x_axis_g = svg.append('g').attr('transform', _translate(margin.left + padding.left, frame.height() - margin.bottom)).attr('class', 'axis')
             y_axis_g = svg.append('g').attr('transform', _translate(margin.left, margin.top)).attr('class', 'axis')
+            ###
 
             panel = svg.append('g').attr('transform',_translate(margin.left + padding.left ,margin.top))
 
@@ -50,51 +62,32 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
             isActive = 0
             selectQuestion = (i) ->
                 isActive = i
-                redrawPanel(measure,'question')
-
-            redrawPanel = (value, category) ->
-
-                panel.selectAll('.bars').data([]).exit().remove();
-
-                ## ENTER
-                panel.selectAll('.bars')
-                .data(data, (d) -> d[category] )
-                .enter()
-                .append('a')
-                .attr('xlink:href', (d) -> '#/questions/' + d[category])
-                .attr('class', 'bars')
-                .append('rect')
-                #.attr('id', (d,i)-> 'q'+i)
-                .attr('class', (d,i) ->
-                    if isActive == i
-                        'isActive'
-                    else
-                        ''
-                )
-                .on('click', (d,i)-> selectQuestion(i);return)
-                .attr('x', (d)-> valueScale(Math.min(0,d[value])))
-                .attr('y', (d) ->  categoryScale(d[category]))
-                .attr('height', Math.min(categoryScale.rangeExtent()[1] / 10, 36) )
-                .attr('width', (d) ->
-                    if Math.max(d[value],0) == 0
-                        valueScale(0) - valueScale(d[value])
-                    else valueScale(d[value]) -  valueScale(0)
-                    )
+                renderPanel(measure,'question',true)
 
 
-            renderPanel = (value, category) ->
+            renderPanel = (value, category, redraw) ->
+
+                    if redraw? and redraw
+                        panel.selectAll('.bars').data([]).exit().remove();
+                        duration = 0
+                    else duration = 1000
+
+                    value_baseline = 'x'
+                    value_extrusion = 'width'
+                    category_baseline = 'y'
+                    category_extrusion = 'height'
 
                     ## UPDATE
                     panel.selectAll('.bars')
                         .data(data, (d) -> d[category] )
                         .select('rect')
                         .transition()
-                        .duration(1000)
-                        .attr('x', (d)-> valueScale(Math.min(0,d[value])))
-                        .attr('width', (d) ->
+                        .duration(duration)
+                        .attr(value_baseline, (d)-> scale[value_baseline](Math.min(0,d[value])))
+                        .attr(value_extrusion, (d) ->
                                     if Math.max(d[value],0) == 0
-                                        valueScale(0) - valueScale(d[value])
-                                    else valueScale(d[value]) -  valueScale(0)
+                                        scale[value_baseline](0) - scale[value_baseline](d[value])
+                                    else scale[value_baseline](d[value]) -  scale[value_baseline](0)
                             )
 
                     ## ENTER
@@ -113,17 +106,17 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                                 ''
                         )
                         .on('click', (d,i)-> selectQuestion(i); return)
-                        .attr('width', 0)
+                        .attr(value_extrusion, 0)
                         .transition()
-                        .duration(1000)
+                        .duration(duration)
                         .ease('circle')
-                        .attr('x', (d)-> valueScale(Math.min(0,d[value])))
-                        .attr('y', (d) ->  categoryScale(d[category]))
-                        .attr('height', Math.min(categoryScale.rangeExtent()[1] / 10, 32) )
-                        .attr('width', (d) ->
+                        .attr(value_baseline, (d)-> scale[value_baseline](Math.min(0,d[value])))
+                        .attr(category_baseline, (d) ->  scale[category_baseline](d[category]))
+                        .attr(category_extrusion, Math.min(scale[category_baseline].rangeExtent()[1] / 10, 32) )
+                        .attr(value_extrusion, (d) ->
                             if Math.max(d[value],0) == 0
-                                valueScale(0) - valueScale(d[value])
-                            else valueScale(d[value]) -  valueScale(0)
+                                scale[value_baseline](0) - scale[value_baseline](d[value])
+                            else scale[value_baseline](d[value]) -  scale[value_baseline](0)
                             )
 
 
@@ -137,27 +130,19 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
             ### Interface ###
             # -> muss außerhalb konfiguriert werden, datenpunkte können auch $scope oder $rootScope punkte sein;
 
-            redrawAxis = () ->
 
+            renderAxis = (duration) ->
+
+                duration ?= 0
+                # hor / vert
                 x_axis = d3.svg.axis()
-                .scale(valueScale)
+                .scale(scale['x'])
                 .orient('bottom')
-                x_axis_g.call(x_axis)
+                g['x'].transition().duration(duration).call(x_axis)
                 y_axis = d3.svg.axis()
-                .scale(categoryScale)
+                .scale(scale['y'])
                 .orient('left')
-                y_axis_g.call(y_axis)
-
-            renderAxis = () ->
-
-                x_axis = d3.svg.axis()
-                .scale(valueScale)
-                .orient('bottom')
-                x_axis_g.transition().duration(1000).call(x_axis)
-                y_axis = d3.svg.axis()
-                .scale(categoryScale)
-                .orient('left')
-                y_axis_g.transition().duration(1000).call(y_axis)
+                g['y'].transition().duration(duration).call(y_axis)
 
 
 
@@ -172,16 +157,16 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                     if current?
                         measure = current
                         switch current
-                            when 'average' then valueScale.domain([0,10])
-                            when 'top' then valueScale.domain([0,1])
-                            when 'nps' then valueScale.domain([-1, 1])
+                            when 'average' then scale['x'].domain([0,10])
+                            when 'top' then scale['x'].domain([0,1])
+                            when 'nps' then scale['x'].domain([-0.5, 1])
 
 
 
                     if data.length > 0
 
                         renderPanel(measure, 'question')
-                        renderAxis(measure, 'question')
+                        renderAxis(1000)
 
                     return
                 ), true )
@@ -192,12 +177,14 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                     # change height and width
 
                     if data.length > 0
-                        categoryScale
+                        # hor / vert
+                        #categoryScale
+                        scale['y']
                             .rangeRoundBands([0, current - margin.top - margin.bottom - padding.bottom ], 1-(1/domain.length), 2/domain.length)
-                        x_axis_g.attr('transform', _translate(margin.left + padding.left, current - margin.bottom))
+                        g['x'].attr('transform', _translate(margin.left + padding.left, current - margin.bottom))
 
-                        redrawAxis()
-                        redrawPanel(measure, 'question')
+                        renderAxis()
+                        renderPanel(measure, 'question', true)
                         #renderPanel()
 
                     return
@@ -208,9 +195,10 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                 ((current, last) ->
 
                     if data.length > 0
-                        valueScale.range([0,current - margin.left - margin.right - padding.left])
-                        redrawAxis()
-                        redrawPanel(measure, 'question')
+                        # hor / vert
+                        scale['x'].range([0,current - margin.left - margin.right - padding.left])
+                        renderAxis()
+                        renderPanel(measure, 'question', true)
                     return
                 ), true )
 
@@ -226,13 +214,14 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                     domain = []
                     angular.forEach(DataService.dataPoint['questions_distinct'], (d) -> domain.push(d.key) if d.value > 0 )
 
-                    categoryScale.domain(domain)
+                    # hor / vert
+                    scale['y'].domain(domain)
                         .rangeRoundBands([0, frame.height() - margin.top - margin.bottom - padding.bottom ],1-(1/domain.length), 2/domain.length)
 
-                    
-                    valueScale.range([0,frame.width() - margin.left - margin.right - padding.left])
+                    # hor / vert
+                    scale['x'].range([0,frame.width() - margin.left - margin.right - padding.left])
 
-                    renderAxis()
+                    renderAxis(1000)
                     renderPanel(measure, 'question')
 
                     return

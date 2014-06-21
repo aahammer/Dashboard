@@ -54,6 +54,9 @@ define(['angular',
             .constant('QuestionByItemSettings',
                 id: 'questionByItem'
             )
+            .constant('QuestionOverTimeSettings',
+                id: 'questionOverTime'
+            )
 
         app.factory('DataService', DataService('DataSettings'))
            .factory('StateManagementService', StateManagementService('Dummy'))
@@ -69,7 +72,7 @@ define(['angular',
             .controller( 'Dummy',['StateManagementService', (StateManagementService) -> return])
             .controller( 'QuestionsController', QuestionsController('QuestionsSettings'))
             .controller( 'QuestionByItemController', QuestionByItemController('QuestionByItemSettings'))
-            .controller( 'QuestionOverTimeController', QuestionOverTimeController('QuestionsSettings'))
+            .controller( 'QuestionOverTimeController', QuestionOverTimeController('QuestionOverTimeSettings'))
 
         app.config(['$stateProvider', '$urlRouterProvider', ($stateProvider,$urlRouterProvider) ->
 

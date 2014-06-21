@@ -28,9 +28,11 @@
       id: 'questions'
     }).constant('QuestionByItemSettings', {
       id: 'questionByItem'
+    }).constant('QuestionOverTimeSettings', {
+      id: 'questionOverTime'
     });
     app.factory('DataService', DataService('DataSettings')).factory('StateManagementService', StateManagementService('Dummy')).factory('StorageService', StorageService('StateSettings'));
-    app.controller('SelectionController', SelectionController('SelectionSettings')).controller('ModuleController', ModuleController('ModuleSettings')).controller('MeasureController', MeasureController('MeasureSettings')).controller('ItemTableController', ItemTableController('ItemTableSettings')).controller('Dummy', ['StateManagementService', function(StateManagementService) {}]).controller('QuestionsController', QuestionsController('QuestionsSettings')).controller('QuestionByItemController', QuestionByItemController('QuestionByItemSettings')).controller('QuestionOverTimeController', QuestionOverTimeController('QuestionsSettings'));
+    app.controller('SelectionController', SelectionController('SelectionSettings')).controller('ModuleController', ModuleController('ModuleSettings')).controller('MeasureController', MeasureController('MeasureSettings')).controller('ItemTableController', ItemTableController('ItemTableSettings')).controller('Dummy', ['StateManagementService', function(StateManagementService) {}]).controller('QuestionsController', QuestionsController('QuestionsSettings')).controller('QuestionByItemController', QuestionByItemController('QuestionByItemSettings')).controller('QuestionOverTimeController', QuestionOverTimeController('QuestionOverTimeSettings'));
     app.config([
       '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
         $stateProvider.state('base', {
