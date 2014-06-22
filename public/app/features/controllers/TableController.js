@@ -60,7 +60,6 @@
             }
           }
           $location.path('/items/' + current);
-          console.log(position[current]);
           $timeout((function() {
             return $scope.gridOptions.selectRow(position[current], true);
           }), 100);

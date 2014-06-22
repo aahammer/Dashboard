@@ -65,6 +65,9 @@ define([], () ->
 
                     state.measure = DataService.dataPoint['measures'][0].key
 
+
+                    console.log(DataService.dataPoint['questions_distinct'][1].value)
+
                     queries['questions_all'] =
                         select: 'question'
                         from: 'speciality'
@@ -75,6 +78,8 @@ define([], () ->
                         into: 'questions_all'
                     DataService.provideData(queries['questions_all'])
 
+                    console.log(DataService.dataPoint['questions_distinct'][1].value)
+
                     queries['question_history'] =
                         select: 'date'
                         from: 'speciality'
@@ -84,6 +89,8 @@ define([], () ->
                             question: state.question
                         into: 'question_history'
                     DataService.provideData(queries['question_history'])
+
+                    console.log(DataService.dataPoint['questions_distinct'][1].value)
 
                     queries['datum_distinct'] =
                         select: 'date'
@@ -132,7 +139,7 @@ define([], () ->
                 urlParts = /#\/(\w*)\/(.*)/g.exec(urlParser.hash)
 
                 switch ( if urlParts[1]? then urlParts[1] else 'error')
-                    when 'selections' then console.log('selections'); return
+                    when 'selections' then  return
                     when 'items'
                         state.item = urlParts[2]
 
@@ -142,13 +149,14 @@ define([], () ->
                                                 date: state.date
                         DataService.provideData(queries['questions_all'])
 
+
                         queries['question_history'].where =
                                 item: state.item
                                 module: state.module
                                 question: state.question
                         DataService.provideData(queries['question_history'])
 
-                        state.question = state.question
+                        #state.question = state.question
 
 
                     when 'modules'
@@ -195,11 +203,13 @@ define([], () ->
                     when 'questions'
                         state.question = decodeURI(urlParts[2])
 
+
                         queries['question_history'].where =
                                                         item: state.item
                                                         module: state.module
                                                         question: state.question
                         DataService.provideData(queries['question_history'])
+
 
                         queries['questionByItem'].where =
                                                 question: state.question
@@ -207,6 +217,7 @@ define([], () ->
                                                 date: state.date
                         into: 'questionByItem'
                         DataService.provideData(queries['questionByItem'])
+
 
                     when 'questionByItem'
                         state.item = urlParts[2]

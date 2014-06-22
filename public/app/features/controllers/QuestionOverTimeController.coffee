@@ -186,6 +186,7 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                 ((current, last) ->
 
 
+
                     data = [current]
 
                     ###
@@ -203,6 +204,8 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
                     renderAxis(1000)
                     renderPanel(measure, 'date')
+
+
 
                     return
 

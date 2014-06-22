@@ -65,7 +65,7 @@ define([], () ->
 
                     $location.path('/items/'+current)
 
-                    console.log(position[current])
+                    #console.log(position[current])
 
                     $timeout((() -> $scope.gridOptions.selectRow(position[current],true)), 100)
 

@@ -168,13 +168,14 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                     return
                 ), true )
 
+
             $scope.$watch(  (() -> DataService.dataPoint['questions_distinct']),
                 ((current, last) ->
-
 
                     domain = []
                     angular.forEach(current, (d) -> domain.push(d.key) if d.value > 0 )
                     activeIndex = 0
+                    console.log(activeIndex)
 
                     # should be rendered by questions_all
                     #renderPanel(measure, 'question')
@@ -185,7 +186,10 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
             $scope.$watch(  (() -> StateManagementService.state.question),
                 ((current, last) ->
 
+                    console.log("hm question changed ?")
+
                     activeIndex = $.inArray(current, domain)
+                    console.log(activeIndex)
                     renderPanel(measure, 'question', true)
 
                     return
@@ -235,6 +239,8 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                 ((current, last) ->
 
 
+                    console.log("hmm , rendering")
+                    console.log(activeIndex)
                     data = current
 
                     # hor / vert

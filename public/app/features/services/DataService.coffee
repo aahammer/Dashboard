@@ -1,4 +1,4 @@
-define(['crossfilter','d3'], (crossfilter,d3) ->
+define(['crossfilter','d3','jquery'], (crossfilter,d3,$) ->
 
 
     ($settings) ->
@@ -38,15 +38,18 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
                 return
 
             select = (select, rollup) ->
-                    result = []
                     if rollup? and rollup = 'count'
-                        result =dimensions[select].group().reduceCount().all()
+                        dimensions[select].group().reduceCount().all()
                     else
-                        result = dimensions[select].filterAll().all()
-                    return result
+                        dimensions[select].filterAll().all()
 
             into = (into, result) ->
-                dataPoint[into] = result
+
+                newResult = []
+                newResult.push(jQuery.extend(true, {}, oldObject)) for oldObject in result
+                #var newObject = jQuery.extend({}, oldObject);
+                #var newObject = jQuery.extend(true, {}, oldObject);
+                dataPoint[into] = newResult
                 #console.log("INTO " +into + ":")
                 #console.log(dataPoint[into])
                 return
@@ -94,6 +97,9 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
                 loadData: loadData
 
                 provideData: (query) ->
+
+                    console.log("providing data for ")
+                    console.log(query)
 
                     if query.where? then where(query.where)
                     result = []

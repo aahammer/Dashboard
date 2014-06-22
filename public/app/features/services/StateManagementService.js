@@ -62,6 +62,7 @@
               }
             }
             state.measure = DataService.dataPoint['measures'][0].key;
+            console.log(DataService.dataPoint['questions_distinct'][1].value);
             queries['questions_all'] = {
               select: 'question',
               from: 'speciality',
@@ -73,6 +74,7 @@
               into: 'questions_all'
             };
             DataService.provideData(queries['questions_all']);
+            console.log(DataService.dataPoint['questions_distinct'][1].value);
             queries['question_history'] = {
               select: 'date',
               from: 'speciality',
@@ -84,6 +86,7 @@
               into: 'question_history'
             };
             DataService.provideData(queries['question_history']);
+            console.log(DataService.dataPoint['questions_distinct'][1].value);
             queries['datum_distinct'] = {
               select: 'date',
               rollup: 'count',
@@ -120,7 +123,6 @@
           urlParts = /#\/(\w*)\/(.*)/g.exec(urlParser.hash);
           switch ((urlParts[1] != null ? urlParts[1] : 'error')) {
             case 'selections':
-              console.log('selections');
               return;
             case 'items':
               state.item = urlParts[2];
@@ -136,7 +138,6 @@
                 question: state.question
               };
               DataService.provideData(queries['question_history']);
-              state.question = state.question;
               break;
             case 'modules':
               state.module = urlParts[2];
