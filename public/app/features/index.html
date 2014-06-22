@@ -25,10 +25,9 @@
 
         <div class="row">
 
-            <div class="col-md-3" ui-view="itemTable">Table selection</div>
+            <div class="col-md-4" ui-view="itemTable">Table selection</div>
 
-            <div class="col-md-9">
-
+            <div class="col-md-8">
 
 
                     <div class="row">
@@ -41,10 +40,6 @@
 
                     <div class="row gap">   </div>
 
-                    <div class="row">
-                          <div class="col-md-12" ui-view="measure">Measures</div>
-                    </div>
-
 
             </div>
 
@@ -54,13 +49,30 @@
 
         <div class="row">
 
-            <div id="questionByItem" class="col-md-3" ui-view="questionByItem"></div>
-            <div id="questionOverTime" class="col-md-9" ui-view="questionOverTime"></div>
+            <div id="questionByItem" class="col-md-4" ui-view="questionByItem"></div>
+
+            <div class="col-md-3">
+
+                <div class="row">
+
+                    <div class="col-md-12"  ui-view="measure">Measures</div>
+
+                </div>
+                <div class="row gap">   </div>
+                <div class="row gap">   </div>
+                <div class="row">
+                    <div class="col-md-12"  ui-view="state">State</div>
+                </div>
+
+            </div>
+
+
+
+            <div id="questionOverTime" class="col-md-5" ui-view="questionOverTime"></div>
 
         </div>
 
     </div>
-
 
 </body>
 </html>

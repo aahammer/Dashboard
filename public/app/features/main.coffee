@@ -31,7 +31,11 @@ require([
 
   (angular,app,domReady) ->
 
-    domReady(-> angular.bootstrap(document, ['Dashboard']))
+    domReady( ->
+            injector = angular.bootstrap(document, ['Dashboard'])
+            injector.get('StateManagementService').broadcastInitialState()
+            return
+        )
 
 
     return

@@ -2,7 +2,7 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
 
     ($settings) ->
-        ChartController = ($rootScope, $scope, DataService, $settings) ->
+        ChartController = ($rootScope, $scope, DataService, StateManagementService, $settings) ->
 
             ### STARTUP CODE ###
 
@@ -13,12 +13,12 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
             margin =
                 left:40
-                right:0
+                right:15
                 top:10
-                bottom:20
+                bottom:50
             padding =
-                left:0
-                bottom:0
+                left:5
+                bottom:5
                 top:0
                 bottom:0
 
@@ -39,18 +39,19 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
             frame = angular.element("#"+id)
 
             scale ={}
-            scale['x'] =  d3.scale.ordinal().rangePoints([0, frame.width() - margin.left - margin.right - padding.left],1)
+            scale['x'] =  d3.time.scale().domain([new Date(2013,4,1), new Date(2014,5,1)]).range([0, frame.width() - margin.left - margin.right - padding.left]);
             scale['y'] = d3.scale.linear()
             .domain([10,0])
             .range([0, frame.height() - margin.top - margin.bottom - padding.bottom ],0.5,0.25)
             g = {}
-            g['x'] = svg.append('g').attr('transform', _translate(margin.left + padding.left, frame.height() - margin.bottom)).attr('class', 'axis')
+            g['x'] = svg.append('g').attr('transform', _translate(margin.left + padding.left, frame.height() - margin.bottom)).attr('class', 'axis vertical')
             g['y'] = svg.append('g').attr('transform', _translate(margin.left, margin.top)).attr('class', 'axis')
 
 
             panel = svg.append('g').attr('transform',_translate(margin.left + padding.left ,margin.top))
 
-            line['measure'] = d3.svg.line()
+            line = {}
+            line['measure'] = d3.svg.line().interpolate("bundle")
 
             renderPanel = (value, category, redraw) ->
 
@@ -65,37 +66,32 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                 category_extrusion = 'width'
 
 
-                line.x((d) -> scale['category_baseline'](d[category]))
-                    .y((d) -> scale['value_baselinle'](d[value]))
+                line['measure'].x((d) -> scale[category_baseline](d[category]))
+                    .y((d) -> scale[value_baseline](d[value]))
 
-                console.log('rendering Lines')
 
-                ###
 
-                ## UPDATE
+
+
+                ##UPDATE
                 panel.selectAll('.lines')
-                .data(data, (d) -> d[category] )
-                .select('polygon')
+                .data(data)
                 .transition()
                 .duration(duration)
-                .attr('points', (d) -> _points(
-                    scale[category_baseline](d[category]),
-                    Math.min(scale[value_baseline].range()[1],scale[value_baseline](0)),
-                    Math.min(scale[category_baseline].rangeBand(), 32),
-                        scale[value_baseline](d[value]) - scale[value_baseline](0)))
-                ###
+                .attr('d', (d) ->  line['measure'](d) )
+
                 ## ENTER
                 panel.selectAll('.lines')
                     .data(data)
                     .enter()
                     .append('path')
                     .attr('class', 'lines')
-                    .attr('d', (d) -> d[0] )
+                    .attr('stroke', 'black')
+                    .attr('fill', 'none')
+                    .attr('d', (d) -> line['measure'](d) )
                     .transition()
                     .duration(duration)
                     .ease('cubic-in-out')
-
-
 
                 ## EXIT
                 panel.selectAll('.lines')
@@ -116,13 +112,17 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
                 x_axis = d3.svg.axis()
                 .scale(scale['x'])
-                .orient('bottom')
-                g['x'].transition().duration(duration).call(x_axis)
+                .orient('bottom').ticks(d3.time.months, 1).tickFormat(d3.time.format('%b'))
+                g['x'].call(x_axis)
+                svg.selectAll(".vertical text").attr('y', 18)
+
 
                 y_axis = d3.svg.axis()
                 .scale(scale['y'])
                 .orient('left').ticks(3)
+
                 g['y'].transition().duration(duration).call(y_axis)
+
 
 
 
@@ -131,20 +131,19 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
             ### RUNTIME ACTIONS ###
             #
             # watch measure change
-            $scope.$watch(  (() -> $rootScope['questions'].measure),
+            $scope.$watch(  (() -> StateManagementService.state.measure),
                 ((current, last) ->
 
-                    console.log("measure changed")
                     if current?
                         measure = current
                         switch current
-                            when 'average' then scale['y'].domain([10,0])
-                            when 'top' then scale['y'].domain([1,0])
-                            when 'nps' then scale['y'].domain([1, -0.5])
+                            when 'AVERAGE' then scale['y'].domain([10,0])
+                            when 'TOP' then scale['y'].domain([1,0])
+                            when 'NPS' then scale['y'].domain([1, -0.5])
 
                     if data.length > 0
 
-                        renderPanel(measure, 'question')
+                        renderPanel(measure, 'date')
                         renderAxis(1000)
 
                     return
@@ -163,7 +162,7 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                         g['x'].attr('transform', _translate(margin.left + padding.left, current - margin.bottom))
 
                         renderAxis()
-                        renderPanel(measure, 'question', true)
+                        renderPanel(measure, 'date', true)
                     #renderPanel()
 
                     return
@@ -175,33 +174,35 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
                     if data.length > 0
                         # hor / vert
-                        scale['x'].rangePoints([0, frame.width() - margin.left - margin.right - padding.left],1)
+                        scale['x'].range([0, frame.width() - margin.left - margin.right - padding.left])
                         renderAxis()
-                        renderPanel(measure, 'question', true)
+                        renderPanel(measure, 'date', true)
                     return
                 ), true )
 
             # watch data change
             # maybe every renderer should know about his data requirements
-            $scope.$watch( (() -> DataService.dataPoint['questions_all']),
+            $scope.$watch( (() -> DataService.dataPoint['question_history']),
                 ((current, last) ->
 
 
                     data = [current]
 
-
+                    ###
                     domain = []
-                    angular.forEach(DataService.dataPoint['questions_distinct'], (d) -> domain.push(d.key) if d.value > 0 )
+
+                    ###
 
                     # hor / vert
                     scale['y'].range([0, frame.height() - margin.top - margin.bottom - padding.bottom ])
 
+
                     # hor / vert
-                    scale['x'].domain(domain)
-                    .rangePoints([0, frame.width() - margin.left - margin.right - padding.left],1)
+                    scale['x']#.domain(domain)
+                        .range([0, frame.width() - margin.left - margin.right - padding.left]);
 
                     renderAxis(1000)
-                    renderPanel(measure, 'question')
+                    renderPanel(measure, 'date')
 
                     return
 
@@ -214,7 +215,7 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
             return
 
-        return ['$rootScope' , '$scope', 'DataService', $settings, ChartController ]
+        return ['$rootScope' , '$scope', 'DataService','StateManagementService', $settings, ChartController ]
 
 )
 

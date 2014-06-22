@@ -2,20 +2,18 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
 
     ($settings) ->
-        ChartController = ($rootScope, $scope, DataService, $settings) ->
+        ChartController = ($scope, DataService, StateManagementService, $settings) ->
 
             ### STARTUP CODE ###
 
             # INIT ID Infrastructure
             id = $settings.id
-            $scope.id = id
-            $rootScope[id] = {}
 
             margin =
                 left:40
                 right:0
                 top:10
-                bottom:10
+                bottom:50
             padding =
                 left:0
                 bottom:0
@@ -30,7 +28,7 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
             data = []
             domain= []
-            measure = 'average'
+            measure = ''
 
             # Init basic svg components according to settings
             svg = d3.select("#"+id).append('svg')
@@ -40,10 +38,10 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
             scale ={}
             scale['x'] =  d3.scale.ordinal()
-            .rangeRoundBands([0, frame.width() - margin.left - margin.right - padding.left],0, 0.6)
+            #.rangeRoundBands([0, frame.width() - margin.left - margin.right - padding.left],0, 0.6)
             scale['y'] = d3.scale.linear()
-                .domain([10,0])
-                .range([0, frame.height() - margin.top - margin.bottom - padding.bottom ],0.5,0.25)
+            #.domain([10,0])
+            #.range([0, frame.height() - margin.top - margin.bottom - padding.bottom ],0.5,0.25)
             g = {}
             g['x'] = svg.append('g').attr('transform', _translate(margin.left + padding.left, frame.height() - margin.bottom)).attr('class', 'axis')
             g['y'] = svg.append('g').attr('transform', _translate(margin.left, margin.top)).attr('class', 'axis')
@@ -53,11 +51,11 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
 
             isActive = 0
-            selectQuestion = (i) ->
+            selectItem = (i) ->
                 isActive = i
-                renderPanel(measure,'question',true)
+                renderPanel(measure,'item',true)
 
-            div = d3.select("body").append("div")
+            tooltip = d3.select("body").append("div")
                         .attr("class", "tooltip")
                         .style("opacity", 0)
 
@@ -74,13 +72,6 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                 category_baseline = 'x'
                 category_extrusion = 'width'
 
-                console.log('rendering')
-
-                ###
-                    (() -> if Math.max(d[value],0) == 0
-                        scale[value_baseline](0) - scale[value_baseline](d[value])
-                    else scale[value_baseline](d[value]) -  scale[value_baseline](0))()) )
-                ###
 
                 ## UPDATE
                 panel.selectAll('.bars')
@@ -99,18 +90,32 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                 .data(data, (d) -> d[category] )
                 .enter()
                 .append('a')
-                .attr('xlink:href', (d) -> '#/questions/' + d[category])
+                .attr('xlink:href', (d) -> '#/questionByItem/' + d[category])
                 .attr('class', 'bars')
 
 
                 .append('polygon')
-                .attr('class', (d,i) ->
-                    if isActive == i
-                        'isActive'
-                    else
-                        ''
+                 .on("mouseover", (d)->
+                        tooltip.transition()
+                            .duration(200)
+                            .style("opacity", 0.9)
+                        tooltip.html(d[category])
+                            .style("left", (d3.event.pageX - 28)  + "px")
+                            .style("top", (d3.event.pageY - 28) + "px")
+                        return
                 )
-                .on('click', (d,i)-> selectQuestion(i); return)
+                .on("mousemove", (d) ->
+                    tooltip
+                    .style("left", (d3.event.pageX - 28) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px")
+                )
+                .on("mouseout", (d) ->
+                    tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0)
+                    return
+                )
+
                 .attr('points', (d) -> _points(
                         scale[category_baseline](d[category]),
                         Math.min(scale[value_baseline].range()[1],scale[value_baseline](0)),
@@ -119,6 +124,12 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                 .transition()
                 .duration(duration)
                 .ease('cubic-in-out')
+                .attr('class', (d,i) ->
+                    if isActive == i
+                        'isActive'
+                    else
+                        ''
+                )
                 .attr('points', (d) -> _points(
                     scale[category_baseline](d[category]),
                     Math.min(scale[value_baseline].range()[1],scale[value_baseline](0)),
@@ -136,50 +147,58 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
 
 
-            ## Interface ##
-            # -> muss außerhalb konfiguriert werden, datenpunkte können auch $scope oder $rootScope punkte sein;
-
-
+            ## Interface
             renderAxis = (duration) ->
 
                 duration ?= 0
-                # hor / vert
-                ###
-                x_axis = d3.svg.axis()
-                .scale(scale['x'])
-                .orient('bottom')
-                g['x'].transition().duration(duration).call(x_axis)
-                ###
+
                 y_axis = d3.svg.axis()
                 .scale(scale['y'])
                 .orient('left').ticks(3)
                 g['y'].transition().duration(duration).call(y_axis)
 
 
+            position = null
 
             ######
 
             ### RUNTIME ACTIONS ###
             #
             # watch measure change
-            $scope.$watch(  (() -> $rootScope['questions'].measure),
+            $scope.$watch(  (() -> StateManagementService.state.measure),
                 ((current, last) ->
 
-                    console.log("measure changed")
+
                     if current?
                         measure = current
                         switch current
-                            when 'average' then scale['y'].domain([10,0])
-                            when 'top' then scale['y'].domain([1,0])
-                            when 'nps' then scale['y'].domain([1, -0.5])
+                            when 'AVERAGE' then scale['y'].domain([10,0])
+                            when 'TOP' then scale['y'].domain([1,0])
+                            when 'NPS' then scale['y'].domain([1, -0.5])
 
                     if data.length > 0
 
-                        renderPanel(measure, 'question')
+                        renderPanel(measure,'item')
                         renderAxis(1000)
 
                     return
                 ), true )
+
+            $scope.$watch(  (() -> StateManagementService.state.item),
+                ((current, last) ->
+
+                    if !position
+                        position = {}
+                        i = 0
+                        for item in DataService.dataPoint['items_distinct']
+                            position[item.key] = i
+                            i += 1
+
+                    selectItem(position[current])
+                    renderPanel(measure,'item',true)
+                    return
+                ), true )
+
             # watch window resize
             $scope.$watch(  (() -> frame.height()),
                 ((current, last) ->
@@ -194,7 +213,7 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                         g['x'].attr('transform', _translate(margin.left + padding.left, current - margin.bottom))
 
                         renderAxis()
-                        renderPanel(measure, 'question', true)
+                        renderPanel(measure, 'item', true)
                     #renderPanel()
 
                     return
@@ -208,21 +227,20 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                         # hor / vert
                         scale['x'].rangeRoundBands([0, Math.min(frame.width() - margin.left - margin.right - padding.left, domain.length * 60)],0, 0.5)
                         renderAxis()
-                        renderPanel(measure, 'question', true)
+                        renderPanel(measure, 'item', true)
                     return
                 ), true )
 
             # watch data change
             # maybe every renderer should know about his data requirements
-            $scope.$watch( (() -> DataService.dataPoint['questions_all']),
+            $scope.$watch( (() -> DataService.dataPoint['questionByItem']),
                 ((current, last) ->
 
 
                     data = current
 
-
                     domain = []
-                    angular.forEach(DataService.dataPoint['questions_distinct'], (d) -> domain.push(d.key) if d.value > 0 )
+                    angular.forEach(DataService.dataPoint['items_distinct'], (d) -> domain.push(d.key) if d.value > 0 )
 
                     # hor / vert
                     scale['y'].range([0, frame.height() - margin.top - margin.bottom - padding.bottom ])
@@ -232,7 +250,7 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
                         .rangeRoundBands([0, Math.min(frame.width() - margin.left - margin.right - padding.left, domain.length * 60)],0, 0.5)
 
                     renderAxis(1000)
-                    renderPanel(measure, 'question')
+                    renderPanel(measure, 'item')
 
                     return
 
@@ -245,21 +263,6 @@ define(['d3', 'angular', 'jquery'], (d3, angular,$) ->
 
             return
 
-        return ['$rootScope' , '$scope', 'DataService', $settings, ChartController ]
+        return [ '$scope', 'DataService', 'StateManagementService', $settings, ChartController ]
 
 )
-
-###
-.on("mouseover", (d) ->
-    div.transition()
-    .duration(200)
-    .style("opacity", .9);
-    div.html(d[category])
-    return
-)
-.on("mousemove", (d) ->
-    div .style("left", (d3.event.pageX) + "px")
-    .style("top", (d3.event.pageY) + "px")
-    return
-)
-###

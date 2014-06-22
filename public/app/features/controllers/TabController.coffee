@@ -1,7 +1,7 @@
 define([], () ->
     ($settings) ->
 
-        TabController = ($rootScope, $scope, $settings, DataService) ->
+        TabController = ($scope, $settings, DataService) ->
 
 
             ### STARTUP CODE ###
@@ -9,7 +9,6 @@ define([], () ->
             # INIT ID Infrastructure
             id = $settings.id
             $scope.id = id
-            $rootScope[id] = {}
 
             # INIT GUI #
             $scope.selected = DataService.dataPoint[id][0].key
@@ -22,7 +21,6 @@ define([], () ->
             #
             select = (selected) -> $scope.selected = selected
             $scope.select = select
-            $rootScope[id].select = select
             #
             ######
 
@@ -42,5 +40,5 @@ define([], () ->
 
             return
 
-        return [ '$rootScope', '$scope' , $settings, 'DataService', TabController ]
+        return ['$scope' , $settings, 'DataService', TabController ]
 )

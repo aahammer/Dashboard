@@ -3,10 +3,10 @@
   define(['crossfilter', 'd3'], function(crossfilter, d3) {
     return function($settings) {
       var DataService;
-      DataService = function($rootScope, $q, $settings) {
+      DataService = function($rootScope, $settings) {
 
         /* INIT VARIABLES */
-        var data, dataPoint, dimensions, into, loadData, optional, resetFilters, select, state, where;
+        var data, dataPoint, dimensions, into, loadData, resetFilters, select, state, where;
         state = {};
         data = {};
         dimensions = {};
@@ -20,48 +20,33 @@
             key: "Station"
           }
         ];
-        dataPoint['items'] = [
-          {
-            id: "Surgery",
-            total: 50
-          }, {
-            id: "Pediatric",
-            total: 43
-          }, {
-            id: "Psychology",
-            total: 27
-          }
-        ];
-        dataPoint['modules'] = [
-          {
-            key: "Organisation_"
-          }, {
-            key: "Treatment_"
-          }, {
-            key: "Service_"
-          }
-        ];
         dataPoint['measures'] = [
           {
-            key: 'average',
+            key: 'AVERAGE',
             name: "Average"
           }, {
-            key: 'top',
+            key: 'TOP',
             name: "Topscore"
           }, {
-            key: 'nps',
+            key: 'NPS',
             name: "NPS"
           }
         ];
+
+        /*
+        dataPoint['items'] = [ { id: "Surgery", total: 50 },
+            { id: "Pediatric", total: 43},
+            { id: "Psychology", total: 27}
+        ]
+        dataPoint['modules'] = [{key: "Organisation_"},{key: "Treatment_"},{key: "Service_"}]
+         */
 
         /* Support Functions */
         where = function(where) {
           var key, value;
           for (key in where) {
             value = where[key];
-            dimensions[key].filterAll();
             dimensions[key].filter(value);
-            return;
           }
         };
         select = function(select, rollup) {
@@ -75,14 +60,7 @@
           return result;
         };
         into = function(into, result) {
-          console.log(into);
-          console.log(result);
           dataPoint[into] = result;
-        };
-        optional = function(optional) {
-          if ((optional.resetFilters != null) && optional.resetFilters) {
-            resetFilters();
-          }
         };
         loadData = function(source, deferred) {
           return d3.csv("data/" + source + ".csv", function(error, file) {
@@ -124,38 +102,28 @@
         /* GLOBAL INTERFACE */
         return {
           dataPoint: dataPoint,
+          loadData: loadData,
           provideData: function(query) {
-            var deferred;
-            deferred = $q.defer();
-            if ((query.from != null) && query.from !== state.from) {
-              loadData(query.from, deferred);
-            } else {
-              deferred.resolve();
+            var result;
+            if (query.where != null) {
+              where(query.where);
             }
-            deferred.promise.then(function() {
-              var result;
-              if (query.where != null) {
-                where(query.where);
+            result = [];
+            if (query.select != null) {
+              if (query.rollup != null) {
+                result = select(query.select, query.rollup);
+              } else {
+                result = select(query.select);
               }
-              result = [];
-              if (query.select != null) {
-                if (query.rollup != null) {
-                  result = select(query.select, query.rollup);
-                } else {
-                  result = select(query.select);
-                }
-              }
-              if (query.into != null) {
-                into(query.into, result);
-              }
-              if (query.optional != null) {
-                optional(query.optional);
-              }
-            });
+            }
+            if (query.into != null) {
+              into(query.into, result);
+            }
+            resetFilters();
           }
         };
       };
-      return ['$rootScope', '$q', $settings, DataService];
+      return ['$rootScope', $settings, DataService];
     };
   });
 

@@ -3,13 +3,12 @@
   define([], function() {
     return function($settings) {
       var TabController;
-      TabController = function($rootScope, $scope, $settings, DataService) {
+      TabController = function($scope, $settings, DataService) {
 
         /* STARTUP CODE */
         var id, select;
         id = $settings.id;
         $scope.id = id;
-        $rootScope[id] = {};
         $scope.selected = DataService.dataPoint[id][0].key;
         $scope.nav_type = $settings.ui.nav_type;
 
@@ -18,7 +17,6 @@
           return $scope.selected = selected;
         };
         $scope.select = select;
-        $rootScope[id].select = select;
 
         /* RUNTIME ACTIONS */
         $scope.$watch((function() {
@@ -27,7 +25,7 @@
           $scope.tabs = DataService.dataPoint[id];
         }), true);
       };
-      return ['$rootScope', '$scope', $settings, 'DataService', TabController];
+      return ['$scope', $settings, 'DataService', TabController];
     };
   });
 

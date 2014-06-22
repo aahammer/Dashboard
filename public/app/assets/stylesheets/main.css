@@ -44,13 +44,13 @@
 }
 
 .ngRow.selected {
-    background-color: #eeeeff;
+    background-color: rgba(255, 169, 8, 0.1);
 }
 
 .ngTopPanel {
 
-    background-color: #c8520a;
-    color: #ffffff;
+    background-color: #ffffff;
+    color: #000000;
 }
 
 .axis > path {
@@ -72,6 +72,32 @@
     stroke-width: 0px;
 }
 
+.lines {
+    stroke-width:2px;
+    stroke: #c8520a;
+}
+
 .bars > .isActive {
     fill: #c8520a;
 }
+
+.tooltip {
+    background-color: rgb(212,212,212);
+    padding:2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    font-weight: bold;
+}
+
+.vertical > g > text {
+    writing-mode: tb;
+    /*glyph-orientation-vertical: 0;
+    letter-spacing:0;*/
+}
+
+.highlite {
+
+    font-style:italic;
+    font-weight:bolder;
+}
+

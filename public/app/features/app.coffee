@@ -10,6 +10,7 @@ define(['angular',
         'controllers/QuestionsController',
         'controllers/QuestionByItemController',
         'controllers/QuestionOverTimeController',
+        'controllers/StateTextController',
         'angular-ui-router',
         'angular-ng-grid']
     (angular,
@@ -23,7 +24,8 @@ define(['angular',
      ItemTableController,
      QuestionsController,
      QuestionByItemController,
-     QuestionOverTimeController) ->
+     QuestionOverTimeController,
+     StateTextController) ->
 
         app = angular.module('Dashboard', ['ui.router','ngGrid'])
 
@@ -73,6 +75,7 @@ define(['angular',
             .controller( 'QuestionsController', QuestionsController('QuestionsSettings'))
             .controller( 'QuestionByItemController', QuestionByItemController('QuestionByItemSettings'))
             .controller( 'QuestionOverTimeController', QuestionOverTimeController('QuestionOverTimeSettings'))
+            .controller( 'StateTextController', StateTextController())
 
         app.config(['$stateProvider', '$urlRouterProvider', ($stateProvider,$urlRouterProvider) ->
 
@@ -97,8 +100,9 @@ define(['angular',
                             controller: 'ModuleController'
                         #'question':
                         #    templateUrl: 'views/default.html'
-                        #'light':
-                        #    templateUrl: 'views/default.html'
+                        'state':
+                            templateUrl: 'views/StateView.html'
+                            controller: 'StateTextController'
                         'questions':
                             templateUrl: 'views/ChartView.html'
                             controller: 'QuestionsController'

@@ -3,47 +3,70 @@
   define([], function() {
     return function($settings) {
       var TableController;
-      TableController = function($rootScope, $scope, $location, $settings, DataService) {
-        var id, selection;
-        id = $settings.id;
-        $scope.id = id;
-        $rootScope[id] = {};
+      TableController = function($timeout, $scope, $location, $settings, DataService, StateManagementService) {
+        var position, selection;
         selection = [];
         $scope.gridOptions = {
           data: 'table',
           multiSelect: false,
           selectedItems: selection,
-          headerRowHeight: 0,
+          headerRowHeight: 42,
+          enableSorting: false,
           columnDefs: [
             {
               field: 'key',
-              displayName: 'Speciality',
+              displayName: '',
               width: '80%'
             }, {
               field: 'value',
-              displayName: 'Total',
+              displayName: 'Surveys',
               width: '20%'
             }
           ]
         };
+        position = null;
 
         /* RUNTIME ACTIONS */
-        $scope.$watch((function() {
-          return DataService.dataPoint[id];
-        }), (function(currrent, last) {
-          $scope.table = DataService.dataPoint[id];
-        }), true);
         $scope.$watch((function() {
           return selection;
         }), (function(current, last) {
           if (current.length !== 0) {
-            $location.path('/items/' + current[0].id);
-          } else {
-            $scope.gridOptions.selectRow(0, true);
+            $location.path('/items/' + current[0].key);
           }
         }), true);
+
+        /*
+        $scope.$on('$viewContentLoaded', (event) ->
+        
+            console.log(event.targetScope.gridOptions)
+            event.targetScope.gridOptions['selectRow'](0,true)
+             *console.log($rootScope.$$listeners)
+             *$rootScope.$$listeners['viewContentLoaded'] = []
+        )
+         */
+        $scope.$watch((function() {
+          return StateManagementService.state.item;
+        }), (function(current, last) {
+          var i, item, _i, _len, _ref;
+          if (!position) {
+            $scope.table = DataService.dataPoint['items_distinct'];
+            position = {};
+            i = 0;
+            _ref = DataService.dataPoint['items_distinct'];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              item = _ref[_i];
+              position[item.key] = i;
+              i += 1;
+            }
+          }
+          $location.path('/items/' + current);
+          console.log(position[current]);
+          $timeout((function() {
+            return $scope.gridOptions.selectRow(position[current], true);
+          }), 100);
+        }), true);
       };
-      return ['$rootScope', '$scope', '$location', $settings, 'DataService', TableController];
+      return ['$timeout', '$scope', '$location', $settings, 'DataService', 'StateManagementService', TableController];
     };
   });
 

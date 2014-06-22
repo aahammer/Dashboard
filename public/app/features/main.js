@@ -32,7 +32,9 @@
 
   require(['angular', './app', 'assets/javascript/domReady'], function(angular, app, domReady) {
     domReady(function() {
-      return angular.bootstrap(document, ['Dashboard']);
+      var injector;
+      injector = angular.bootstrap(document, ['Dashboard']);
+      injector.get('StateManagementService').broadcastInitialState();
     });
   });
 

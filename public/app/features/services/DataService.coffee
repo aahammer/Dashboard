@@ -2,7 +2,7 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
 
 
     ($settings) ->
-        DataService = ($rootScope, $q, $settings) ->
+        DataService = ($rootScope, $settings) ->
 
 
             ### INIT VARIABLES ###
@@ -12,26 +12,30 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
             dataPoint = {}
 
 
+
             ### TODO Remove Startup Code dependencies ###
+
             dataPoint['selections'] = [{key: "Speciality"},{key: "Station"}]
+            dataPoint['measures'] = [{key:'AVERAGE', name: "Average"},{key:'TOP', name: "Topscore"},{key:'NPS', name: "NPS"}]
+
+            ###
             dataPoint['items'] = [ { id: "Surgery", total: 50 },
                 { id: "Pediatric", total: 43},
                 { id: "Psychology", total: 27}
             ]
             dataPoint['modules'] = [{key: "Organisation_"},{key: "Treatment_"},{key: "Service_"}]
-            dataPoint['measures'] = [{key:'average', name: "Average"},{key:'top', name: "Topscore"},{key:'nps', name: "NPS"}]
 
+            ###
             ### Support Functions ###
             #
             # Query Syntax currently supports select, from, where, into directives
             # + special syntax for rollup and optional settings like durable filters
 
             where = (where) ->
-
                 for key, value of where
-                    dimensions[key].filterAll()
+                    #console.log('-----> '+key)
                     dimensions[key].filter(value)
-                    return
+                return
 
             select = (select, rollup) ->
                     result = []
@@ -42,15 +46,10 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
                     return result
 
             into = (into, result) ->
-                console.log(into)
-                console.log(result)
                 dataPoint[into] = result
+                #console.log("INTO " +into + ":")
+                #console.log(dataPoint[into])
                 return
-
-            optional = (optional) ->
-                if optional.resetFilters? and optional.resetFilters
-                    resetFilters()
-                    return
 
             # Todo make this code more generic
             loadData = (source, deferred) ->
@@ -85,37 +84,33 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
             #
             ######
 
+
             ### GLOBAL INTERFACE ###
             #
             return  {
 
                 dataPoint: dataPoint
 
+                loadData: loadData
+
                 provideData: (query) ->
 
-                    deferred = $q.defer()
+                    if query.where? then where(query.where)
+                    result = []
+                    if query.select?
+                        if query.rollup? then result = select(query.select, query.rollup)
+                        else  result = select(query.select)
+                    if query.into? then into(query.into, result)
+                    resetFilters()
 
-                    if query.from? and query.from != state.from
-                       loadData(query.from, deferred)
-                    else deferred.resolve()
-
-                    deferred.promise.then(() ->
-
-                        if query.where? then where(query.where)
-                        result = []
-                        if query.select?
-                            if query.rollup? then result = select(query.select, query.rollup)
-                            else  result = select(query.select)
-                        if query.into? then into(query.into, result)
-                        if query.optional? then optional(query.optional)
-                        return
-
-                    )
                     return
+
+
+
 
             }
             #
             ######
 
-        return [ '$rootScope', '$q', $settings, DataService ]
+        return [ '$rootScope',  $settings, DataService ]
 )

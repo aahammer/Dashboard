@@ -3,100 +3,218 @@
   define([], function() {
     return function($settings) {
       var StateManagementService;
-      StateManagementService = function($rootScope, $settings, DataService) {
+      StateManagementService = function($rootScope, $q, $location, $settings, DataService) {
+        var broadcastInitialState, initApplication, queries, state, urlParser, visit;
+        state = {
+          selection: 'speciality',
+          item: null,
+          module: null,
+          measure: null,
+          question: null,
+          date: Date.parse('2014-05-01')
+        };
 
         /* Handle wrong URLS */
 
         /* INIT Application */
-        var initApplication, urlParser;
         urlParser = document.createElement('a');
+        queries = {};
         initApplication = function() {
-          var query_item, query_module, query_question, query_question_all;
-          query_item = {
-            select: 'item',
-            rollup: 'count',
-            from: 'speciality',
-            where: {
-              date: Date.parse('2014-05-01')
-            },
-            into: 'items'
-          };
-          query_module = {
-            select: 'module',
-            rollup: 'count',
-            from: 'speciality',
-            into: 'modules'
-          };
-          query_question = {
-            select: 'question',
-            rollup: 'count',
-            from: 'speciality',
-            where: {
-              item: 'surgery',
-              module: 'organisation'
-            },
-            into: 'questions'
-          };
-          query_question_all = {
-            select: 'question',
-            from: 'speciality',
-            into: 'questions_all'
-          };
-          DataService.provideData(query_item);
-          DataService.provideData(query_module);
-          DataService.provideData(query_question_all);
-          DataService.provideData(query_question);
+          var deferred;
+          deferred = $q.defer();
+          DataService.loadData(state.selection, deferred);
+          deferred.promise.then(function() {
+            var question, _i, _len, _ref;
+            queries['items_distinct'] = {
+              select: 'item',
+              rollup: 'count',
+              from: 'speciality',
+              into: 'items_distinct'
+            };
+            DataService.provideData(queries['items_distinct']);
+            state.item = DataService.dataPoint['items_distinct'][0].key;
+            queries['modules'] = {
+              select: 'module',
+              rollup: 'count',
+              from: 'speciality',
+              into: 'modules'
+            };
+            DataService.provideData(queries['modules']);
+            state.module = DataService.dataPoint['modules'][0].key;
+            queries['questions_distinct'] = {
+              select: 'question',
+              rollup: 'count',
+              from: 'speciality',
+              where: {
+                item: state.item,
+                module: state.module
+              },
+              into: 'questions_distinct'
+            };
+            DataService.provideData(queries['questions_distinct']);
+            state.question = DataService.dataPoint['questions_distinct'][0].key;
+            _ref = DataService.dataPoint['questions_distinct'];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              question = _ref[_i];
+              if (question.value !== 0) {
+                state.question = question.key;
+                break;
+              }
+            }
+            state.measure = DataService.dataPoint['measures'][0].key;
+            queries['questions_all'] = {
+              select: 'question',
+              from: 'speciality',
+              where: {
+                item: state.item,
+                module: state.module,
+                date: state.date
+              },
+              into: 'questions_all'
+            };
+            DataService.provideData(queries['questions_all']);
+            queries['question_history'] = {
+              select: 'date',
+              from: 'speciality',
+              where: {
+                item: state.item,
+                module: state.module,
+                question: state.question
+              },
+              into: 'question_history'
+            };
+            DataService.provideData(queries['question_history']);
+            queries['datum_distinct'] = {
+              select: 'date',
+              rollup: 'count',
+              from: 'speciality',
+              into: 'datum_distinct'
+            };
+            DataService.provideData(queries['datum_distinct']);
+            queries['questionByItem'] = {
+              select: 'item',
+              from: 'speciality',
+              where: {
+                question: state.question,
+                module: state.module,
+                date: state.date
+              },
+              into: 'questionByItem'
+            };
+            DataService.provideData(queries['questionByItem']);
+          });
         };
         initApplication();
 
         /* RUNTIME */
+        visit = 0;
+        $rootScope.$on('$locationChangeStart', function(event, now, last) {
+          if (visit === 0) {
+            $location.path('/selections/Speciality');
+            visit = 1;
+          }
+        });
         $rootScope.$on('$locationChangeSuccess', function(event, now, last) {
-          var query, urlParts;
+          var question, urlParts, _i, _len, _ref;
           urlParser.href = now;
-          console.log(now);
-          urlParts = /#\/(\w*)\/(\w*)/g.exec(urlParser.hash);
+          urlParts = /#\/(\w*)\/(.*)/g.exec(urlParser.hash);
           switch ((urlParts[1] != null ? urlParts[1] : 'error')) {
             case 'selections':
               console.log('selections');
               return;
             case 'items':
-              console.log('items');
-              return;
+              state.item = urlParts[2];
+              queries['questions_all'].where = {
+                item: state.item,
+                module: state.module,
+                date: state.date
+              };
+              DataService.provideData(queries['questions_all']);
+              queries['question_history'].where = {
+                item: state.item,
+                module: state.module,
+                question: state.question
+              };
+              DataService.provideData(queries['question_history']);
+              state.question = state.question;
+              break;
             case 'modules':
-              console.log("URKL " + urlParts[2]);
-              query = {
-                select: 'question',
-                rollup: 'count',
-                from: 'speciality',
-                where: {
-                  module: urlParts[2]
-                },
-                into: 'questions_distinct'
+              state.module = urlParts[2];
+              queries['questions_distinct'].where = {
+                item: state.item,
+                module: state.module
               };
-              DataService.provideData(query);
-              query = {
-                select: 'question',
-                from: 'speciality',
-                into: 'questions_all'
+              DataService.provideData(queries['questions_distinct']);
+              _ref = DataService.dataPoint['questions_distinct'];
+              for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                question = _ref[_i];
+                if (question.value !== 0) {
+                  state.question = question.key;
+                  break;
+                }
+              }
+              queries['questions_all'].where = {
+                item: state.item,
+                module: state.module,
+                date: state.date
               };
-              DataService.provideData(query);
-              console.log("sagas");
+              DataService.provideData(queries['questions_all']);
+              queries['question_history'].where = {
+                item: state.item,
+                module: state.module,
+                question: state.question
+              };
+              DataService.provideData(queries['question_history']);
+              queries['questionByItem'].where = {
+                question: state.question,
+                module: state.module,
+                date: state.date
+              };
+              ({
+                into: 'questionByItem'
+              });
+              DataService.provideData(queries['questionByItem']);
               return;
             case 'measures':
-              $rootScope['questions'].measure = urlParts[2];
-              return;
+              state.measure = urlParts[2];
+              break;
             case 'questions':
-              console.log('questions');
-              return;
+              state.question = decodeURI(urlParts[2]);
+              queries['question_history'].where = {
+                item: state.item,
+                module: state.module,
+                question: state.question
+              };
+              DataService.provideData(queries['question_history']);
+              queries['questionByItem'].where = {
+                question: state.question,
+                module: state.module,
+                date: state.date
+              };
+              ({
+                into: 'questionByItem'
+              });
+              DataService.provideData(queries['questionByItem']);
+              break;
+            case 'questionByItem':
+              state.item = urlParts[2];
+              break;
             default:
               console.log('error in url part 1');
           }
         });
+        broadcastInitialState = function() {
+          console.log("broadcasting");
+          return state.item = "SDGSG";
+        };
 
         /* GLOBAL INTERFACE */
-        return {};
+        return {
+          broadcastInitialState: broadcastInitialState,
+          state: state
+        };
       };
-      return ['$rootScope', $settings, 'DataService', StateManagementService];
+      return ['$rootScope', '$q', '$location', $settings, 'DataService', StateManagementService];
     };
   });
 
