@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Hallo</title>
+    <script src="assets/javascript/crossfilter.js"></script>
+    <script src="assets/javascript/d3.js"></script>
+</head>
+<body>
+ Hallo Welt
+<script>
+    // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
+    d3.csv("test/data.csv", function(error, data) {
+        console.log(data);
+
+        data.forEach(function(d, i) {
+            d.total = +d.total;
+            d.return_total = +d.return_total;
+            d.return_rate = +d.return_rate;
+            d.average = +d.average;
+            d.top = +d.top;
+            d.nps = +d.nps;
+        });
+
+        specialty_satisfaction = crossfilter(data);
+
+        dim_speciality   = specialty_satisfaction.dimension(function(d){return d.specialty;});
+        dim_module      = specialty_satisfaction.dimension(function(d){return d.module;});
+        dim_question    = specialty_satisfaction.dimension(function(d){return d.question;});
+        dim_year        = specialty_satisfaction.dimension(function(d){return d.year;});
+        dim_month       = specialty_satisfaction.dimension(function(d){return d.month;});
+
+        measure_average = specialty_satisfaction.dimension(function(d){return d.average;});
+
+        console.log(dim_speciality.group());
+
+        dim_speciality.filter("surgery");
+        dim_module.filter("organisation");
+        console.log(dim_year.filter("2014").top(Infinity));
+
+        console.log(dim_question.group().reduceSum(function(fact){return fact.average}).top(Infinity));
+
+    });
+
+
+
+
+
+
+</script>
+</body>
+</html>

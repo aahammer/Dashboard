@@ -1,0 +1,43 @@
+
+<html>
+<head>
+    <title>Dashboard</title>
+    <!-- link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" -->
+    <link rel="stylesheet" media="screen" href="assets/stylesheets/bootstrap.css">
+    <link rel="stylesheet" media="screen" href="assets/stylesheets/ng-grid.css">
+    <link rel="stylesheet" media="screen" href="assets/stylesheets/main.css">
+    <!--script data-main="/main.js" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js"></script-->
+    <script data-main="/main.js" src="assets/javascript/require.js"></script>
+
+</head>
+<body>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12" ui-view="selection"> Main selection between specialty and station  </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3" ui-view="itemTable">Table selection</div>
+            <div class="col-md-9">
+                <div class="row">
+                    <div class="col-md-12" ui-view="module">Module Selection</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4" ui-view="question">Questions</div>
+                    <div class="col-md-1" ui-view="light">Traffic</div>
+                    <div class="col-md-7" ui-view="barchart">Barchart</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-7 col-md-offset-5" ui-view="measure">Measures</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-9 col-md-offset-3" ui-view="linechart">Timeseries Data</div>
+        </div>
+
+    </div>
+
+
+</body>
+</html>
