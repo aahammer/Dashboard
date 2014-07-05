@@ -9,8 +9,9 @@
     <!--script data-main="/main.js" src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.11/require.min.js"></script-->
     <script data-main="/main.js" src="assets/javascript/require.js"></script>
 
+
 </head>
-<body>
+<body ng-controller="Dummy">
 
     <div class="container">
         <div class="row">
@@ -23,12 +24,12 @@
                     <div class="col-md-12" ui-view="module">Module Selection</div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4" ui-view="question">Questions</div>
+                    <div class="col-md-3" ui-view="question">Questions</div>
                     <div class="col-md-1" ui-view="light">Traffic</div>
-                    <div class="col-md-7" ui-view="barchart">Barchart</div>
+                    <div  id="barchart" class="col-md-8" ui-view="barchart">Barchart</div>
                 </div>
                 <div class="row">
-                    <div class="col-md-7 col-md-offset-5" ui-view="measure">Measures</div>
+                    <div class="col-md-8 col-md-offset-4" ui-view="measure">Measures</div>
                 </div>
             </div>
         </div>

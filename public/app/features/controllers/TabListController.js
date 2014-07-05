@@ -3,44 +3,28 @@
   define([], function() {
     return function($settings) {
       var TabListController;
-      TabListController = function($scope, $stateParams, $settings, StateService, DataService) {
-        $scope.data = $settings.data;
-        console.log("hallo welt");
-        if (angular.isUndefined(StateService.load($scope.data))) {
-          $scope.selected = DataService[$scope.data][0].name;
-        } else {
-          $scope.selected = StateService.load($scope.data).selected;
-        }
+      TabListController = function($rootScope, $scope, $settings, DataService) {
+        var id;
+        id = $settings.id;
+        $scope.id = id;
+        $rootScope[id] = {};
+        $scope.selected = DataService.dataPoint[id][0].name;
         $scope.nav_type = $settings.ui.nav_type;
         $scope.select = function(selected) {
-          return StateService.store($scope.data, {
-            selected: selected
-          });
+          return $scope.selected = selected;
         };
+        $rootScope[id].select = $scope.select;
+        console.log(id);
+        console.log(DataService.dataPoint[id]);
         $scope.$watch((function() {
-          return DataService[$scope.data];
+          return DataService.dataPoint[id];
         }), (function(newVal, oldVal) {
-          $scope.tabs = newVal;
+          $scope.tabs = DataService.dataPoint[id];
         }), true);
       };
-      return ["$scope", '$stateParams', $settings, 'StateService', 'DataService', TabListController];
+      return ['$rootScope', '$scope', $settings, 'DataService', TabListController];
     };
   });
-
-
-  /*
-  () -> return DataService[data],  (newVal, oldVal) -> console.log(newVal); console.log(oldVal) , true)
-  
-  $scope.$watch(function () {
-  return myService.tags;
-  },
-  function(newVal, oldVal) {
-  alert("Inside watch");
-  console.log(newVal);
-  console.log(oldVal);
-  },
-  true);
-   */
 
 }).call(this);
 

@@ -1,33 +1,54 @@
 # TODO: Alter table style
 # TODO: fill with DataService Data
+
 define([], () ->
 
     ($settings) ->
 
-        TabelListCtrl = ($scope, $settings, DataService) ->
-            #console.log(DataService)
-            $scope.data = $settings.data
-            $scope.table = DataService[$scope.data]
+        TabelListCtrl = ($rootScope, $scope, $settings, DataService) ->
+
+
+
+            id = $settings.id
             $scope.gridOptions = { data: 'table' }
 
 
-            ###
-                OnReload,
-                    if content changed -> load
-                    1. display old data
-                    2 transition to new data
-
-
-            ###
-
-            ### Store here information about old state , if changed !
-            $scope.$watch(  (() -> DataService[$scope.data]),
+            $scope.$watch( (() -> DataService.dataPoint[id]),
                 ((newVal, oldVal) ->
-                $scope.table = DataService[$scope.data]
-                return
-            ), true )
-            ###
+                    $scope.table = DataService.dataPoint[id]
+                    return
+                ),
+                true
+            )
+
             return
 
-        return [ "$scope", $settings, 'DataService', TabelListCtrl ]
+        return [ '$rootScope', '$scope', $settings, 'DataService', TabelListCtrl ]
 )
+###
+define([], () ->
+
+    ($settings) ->
+
+        TableListController = ( $rootScope, $scope, $settings, DataService) ->
+
+            $scope.data = $settings.data
+            console.log($settings.data)
+            #$scope[$settings.data].doSomething = () -> console.log("hallo Welt")
+            this.scope = $scope
+            $rootScope.items = ()->console.log("hallo Welt")
+            this.scope.gridOptions = {data: 'table'}
+            this.scope.table = [ name:"alfons", name:"bert"]
+            return( this )
+
+        TableListController.prototype =
+            hallo : () ->
+                console.log("welt")
+                return
+
+        return [ '$rootScope', "$scope", $settings, 'DataService', TableListController ]
+)
+###
+###
+
+)###

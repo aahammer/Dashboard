@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Hallo</title>
+    <script src="assets/javascript/crossfilter.js"></script>
+    <script src="assets/javascript/d3.js"></script>
+</head>
+<body id="barchart">
+ Hallo Welt
+<script>
+
+    screen = {}
+    page = {}
+    page.width = 400;
+    page.height = 400;
+    page.margin = {};
+    page.margin.left=25;
+    page.margin.right=25;
+    page.margin.top=25;
+    page.margin.bottom=25;
+    var axis = {}
+    axis.orient = 'bottom';
+    axis.ticks = 6;
+    axis.x ={}
+    axis.y = {}
+    axis.x.length = page.width - page.margin.left - page.margin.right;
+    axis.y.length = page.height - page.margin.top - page.margin.bottom;
+
+
+    svg = d3.select("#barchart").append('svg')
+            .attr('width', page.width)
+            .attr('heigth',page.height);
+
+
+
+   scale = d3.scale.linear()
+           .domain([0,1000])
+           .range([0,axis.x.length]);
+
+   axis_ = d3.svg.axis()
+           .scale(scale)
+           .orient(axis.orient)
+           .ticks(axis.ticks);
+
+
+    svg.append('g')
+            .attr('transform', function() {
+
+                translate = '';
+
+                switch (axis.orient) {
+                    case "top":
+                        translate = 'translate('+page.margin.left+','+ page.margin.top +')';
+                        break;
+                    case "bottom":
+                        translate = 'translate('+page.margin.left+','+ (page.margin.top + axis.y.length) +')';
+                        break;
+                    case "left":
+                        translate = 'translate('+page.margin.left+','+ page.margin.top +')';
+                        break;
+                    case "right":
+                        translate = 'translate('+(page.margin.left + axis.x.length)+','+ (page.margin.top) +')';
+                        break;
+                }
+
+                return translate ;
+            }).call(axis_)
+
+
+
+
+
+</script>
+</body>
+</html>

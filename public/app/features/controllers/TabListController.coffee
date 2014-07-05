@@ -1,45 +1,32 @@
 define([], () ->
     ($settings) ->
-        TabListController = ($scope, $stateParams, $settings, StateService, DataService) ->
-            $scope.data = $settings.data
+        TabListController = ($rootScope, $scope, $settings, DataService) ->
 
-            console.log("hallo welt")
-            if angular.isUndefined(StateService.load($scope.data))
-                $scope.selected = DataService[$scope.data][0].name
-            else $scope.selected = StateService.load($scope.data).selected
+            id = $settings.id
+            $scope.id = id
+            $rootScope[id] = {}
 
+            $scope.selected = DataService.dataPoint[id][0].name
             $scope.nav_type= $settings.ui.nav_type
 
-            $scope.select = (selected) ->
-                    #$scope.selected = selected
-                    StateService.store($scope.data, {selected:selected})
+            $scope.select = (selected) -> $scope.selected = selected
+            $rootScope[id].select = $scope.select
 
-            # Do not need watch, cause this shit gets resetet by ui-router everytime anyways.
-            $scope.$watch(  (() -> DataService[$scope.data]),
+            console.log(id)
+            console.log( DataService.dataPoint[id])
+
+            # Todo alter data on reset
+            $scope.$watch( (() -> DataService.dataPoint[id]),
                 ((newVal, oldVal) ->
 
-                    $scope.tabs = newVal
+                    # loop over -> kep default or set 0
+
+                    $scope.tabs = DataService.dataPoint[id]
                     return
                 ),
                 true
             )
-            #
-
             return
-        return [ "$scope", '$stateParams' , $settings, 'StateService','DataService', TabListController ]
 
+        return [ '$rootScope', '$scope' , $settings, 'DataService', TabListController ]
 )
-###
-() -> return DataService[data],  (newVal, oldVal) -> console.log(newVal); console.log(oldVal) , true)
-
-$scope.$watch(function () {
-return myService.tags;
-},
-function(newVal, oldVal) {
-alert("Inside watch");
-console.log(newVal);
-console.log(oldVal);
-},
-true);
-
-###
