@@ -2,20 +2,48 @@
 (function() {
   define([], function() {
     return function($settings) {
-      var TabelListCtrl;
-      TabelListCtrl = function($rootScope, $scope, $settings, DataService) {
-        var id;
+      var TableController;
+      TableController = function($rootScope, $scope, $location, $settings, DataService) {
+        var id, selection;
         id = $settings.id;
+        $scope.id = id;
+        $rootScope[id] = {};
+        selection = [];
         $scope.gridOptions = {
-          data: 'table'
+          data: 'table',
+          multiSelect: false,
+          selectedItems: selection,
+          headerRowHeight: 0,
+          columnDefs: [
+            {
+              field: 'key',
+              displayName: 'Speciality',
+              width: '80%'
+            }, {
+              field: 'value',
+              displayName: 'Total',
+              width: '20%'
+            }
+          ]
         };
+
+        /* RUNTIME ACTIONS */
         $scope.$watch((function() {
           return DataService.dataPoint[id];
-        }), (function(newVal, oldVal) {
+        }), (function(currrent, last) {
           $scope.table = DataService.dataPoint[id];
         }), true);
+        $scope.$watch((function() {
+          return selection;
+        }), (function(current, last) {
+          if (current.length !== 0) {
+            $location.path('/items/' + current[0].id);
+          } else {
+            $scope.gridOptions.selectRow(0, true);
+          }
+        }), true);
       };
-      return ['$rootScope', '$scope', $settings, 'DataService', TabelListCtrl];
+      return ['$rootScope', '$scope', '$location', $settings, 'DataService', TableController];
     };
   });
 
@@ -53,4 +81,4 @@
 
 }).call(this);
 
-//# sourceMappingURL=TabelListController.map
+//# sourceMappingURL=TableController.map

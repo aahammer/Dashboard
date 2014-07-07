@@ -1,130 +1,119 @@
 define(['crossfilter','d3'], (crossfilter,d3) ->
 
     ($settings) ->
-        DataService = ($rootScope, $settings) ->
-
-            console.log("asgd hfj")
+        DataService = ($rootScope, $q, $settings) ->
 
 
-            state = {   selection: 'speciality', item: null, module: null,  question: null, measure: 'average' }
-
-
+            ### INIT VARIABLES ###
+            state = {}
             data = {}
-            dataPoint = {}
-            hello = () -> "world"
-            setupData = () ->
-                d3.csv("data/data.csv", (error, data) ->
-
-
-                        data.forEach((d, i) ->
-                            d.total = +d.total;
-                            d.date = Date.parse(d.date)
-                            d.return_total = +d.return_total;
-                            d.return_rate = +d.return_rate;
-                            d.average = +d.average;
-                            d.top = +d.top;
-                            d.nps = +d.nps;
-                        )
-                )
-                return crossfilter(data)
-
-            data = setupData();
-
             dimensions = {}
-            dimensions['item']        = data.dimension( (d) ->  d.item )
-            dimensions['module']      = data.dimension( (d) ->  d.module )
-            dimensions['question']    = data.dimension( (d) ->  d.question )
-            dimensions['date']        = data.dimension( (d) ->  d.date )
+            dataPoint = {}
 
-            resetFilters = () -> dim.filterAll() for dim in dimensions; return
 
-            dataPoint['selections'] = [{name: "Speciality"},{name: "Station"}]
+
+            ### TODO Remove Startup Code dependencies ###
+            dataPoint['selections'] = [{key: "Speciality"},{key: "Station"}]
             dataPoint['items'] = [ { id: "Surgery", total: 50 },
                 { id: "Pediatric", total: 43},
                 { id: "Psychology", total: 27}
             ]
-            dataPoint['modules'] = [{name: "Organisation"},{name: "Treatment"},{name: "Service"}]
-            dataPoint['measures'] = [{id:'average', name: "Average"},{id:'top', name: "Topscore"},{id:'nps', name: "NPS"}]
+            dataPoint['modules'] = [{key: "Organisation_"},{key: "Treatment_"},{key: "Service_"}]
+            dataPoint['measures'] = [{key:'average_', name: "Average"},{key:'top', name: "Topscore"},{key:'nps', name: "NPS"}]
 
-            # dynamically create data providers
-            # ask for external filter criteria for dimensions and put new data into data items
-            # need to know where i get columnheaders from
+            ### Support Functions ###
+            #
+            # Query Syntax currently supports select, from, where, into directives
+            # + special syntax for rollup and optional settings like durable filters
 
-            i =0
+            where = (where) ->
+
+                for key, value of where
+
+                    dimensions[key].filterAll()
+                    dimensions[key].filter(value)
+                    return
+
+            select = (select, rollup) ->
+                    result = []
+                    if rollup? and rollup = 'count'
+                        result =dimensions[select].group().reduceCount().all()
+                    else
+                        result = dimensions[select].filterAll().all()
+                    return result
+
+            into = (into, result) ->
+                dataPoint[into] = result
+                return
+
+            optional = (optional) ->
+                if optional.keepFilter? and !optional.keepFilter
+                    resetFilters()
+                    return
+
+            # Todo make this code more generic
+            loadData = (source, deferred) ->
+
+                d3.csv("data/"+source+".csv", (error, file) ->
+
+
+                    file.forEach((d, i) ->
+                        d.total = +d.total;
+                        d.date = Date.parse(d.date)
+                        d.return_total = +d.return_total;
+                        d.return_rate = +d.return_rate;
+                        d.average = +d.average;
+                        d.top = +d.top;
+                        d.nps = +d.nps;
+                    )
+
+                    crossfilter_data = crossfilter(file)
+
+                    dimensions['item']        = crossfilter_data.dimension( (d) ->  d.item )
+                    dimensions['module']      = crossfilter_data.dimension( (d) ->  d.module )
+                    dimensions['question']    = crossfilter_data.dimension( (d) ->  d.question )
+                    dimensions['date']        = crossfilter_data.dimension( (d) ->  d.date )
+
+                    state.from = source
+
+                    deferred.resolve(crossfilter_data)
+                    #deferred.reject()
+                )
+
+            resetFilters = () -> dim.filterAll() for dim in dimensions; return
+            #
+            ######
+
+            ### GLOBAL INTERFACE ###
+            #
             return  {
-                # Todo Option auf vergessen
-                provideData: (query ) ->
-
-                    # filter as told and put data into data sinks
-                    # {select:, from:, where:, order: group
-                    # -> where = list of filters for dimensions
-                    # -> select = datasinks (e.g. selection, items, question, history, etc. )
-                    # -> from = file
-                    console.log(query)
-                    if i == 1 then dataPoint['selections'] = [{name: "Hello"},{name: "Fuckin"},{name: "Change"}]
-
-                    if i == 2 then dataPoint['selections'] = [{name: "How"},{name: "you"},{name: "Speciality"}]
-
-                    i = i+1
-                    # Todo Iterate over selection
-                    ###
-
-                    for k,v of ages
-                    console.log k + " is " + v
-
-                    if query.from then
-                        reload File if not already set
-
-                    for k,v in query.where
-                        dimensions[k].filterAll()
-                        if v != '*' then dimensions[k].filter(v)
-
-                    for k in query.select
-                        data[k] = dimensions[?].top(Infinity)
-
-                    # set filters
-                    for k,v in selection.iteritems()
-                        dimensions[k].filterAll()
-                        if v != '*' then dimensions[k].filter(v)
-
-                    for k,v in selection.iteritems()
-                        #data[k] = dimensions[?].filter.all()
-                        console.log(k)
-                    #selection.forEach( (d,i) -> console.log(d); connsole.log(i) )
-                    ###
-
-                changeSelection: (selection) -> return #load different dataset
-                changeItem: (item) ->
-                    dimensions['item'].filterAll()
-                    dimensions['item'].filter(item)
-                    return
-                changeModule: (module) ->
-                    dimensions['module'].filterAll()
-                    dimensions['module'].filter(module)
-                    return
-                changeMeasure: (measure) ->
-                    dimensions['measure'].filterAll()
-                    dimensions['measure'].filter(measure)
-                    return
-                changeQuestion: (question) ->
-                    dimensions['question'].filterAll()
-                    dimensions['question'].filter(question)
-                    return
 
                 dataPoint: dataPoint
-                ###
-                selections: [{name: "Speciality"},{name: "Station"}]
-                items: [ { id: "Surgery", total: 50 },
-                         { id: "Pediatric", total: 43},
-                         { id: "Psychology", total: 27}
-                     ]
-                modules: [{name: "Organisation"},{name: "Treatment"},{name: "Service"}]
-                questions: ''
-                measures:[{id:'average', name: "Average"},{id:'top', name: "Topscore"},{id:'nps', name: "NPS"}]
-                history: ''
 
-                ###
+                provideData: (query) ->
+
+                    deferred = $q.defer()
+
+                    if query.from? and query.from != state.from
+                       loadData(query.from, deferred)
+
+                    deferred.promise.then(() ->
+
+                        if query.where? then where(query.where)
+                        result = []
+                        if query.select?
+                            if query.rollup? then result = select(query.select, query.rollup)
+                            else  result = select(query.select)
+                        if query.into? then into(query.into, result)
+                        if query.optional? then optional(query.optional)
+                        return
+
+                    )
+                    return
+
             }
+            #
+            ######
 
-        return [ '$rootScope', $settings, DataService ]
+        return [ '$rootScope', '$q', $settings, DataService ]
 )

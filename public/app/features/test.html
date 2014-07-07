@@ -10,11 +10,13 @@
  Hallo Welt
 <script>
     // (It's CSV, but GitHub Pages only gzip's JSON at the moment.)
-    d3.csv("test/data.csv", function(error, data) {
+    d3.csv("data/speciality.csv", function(error, data) {
         console.log(data);
 
+        dim={}
         data.forEach(function(d, i) {
             d.total = +d.total;
+            d.date = Date.parse(d.date);
             d.return_total = +d.return_total;
             d.return_rate = +d.return_rate;
             d.average = +d.average;
@@ -22,16 +24,18 @@
             d.nps = +d.nps;
         });
 
-        specialty_satisfaction = crossfilter(data);
+        cdata = crossfilter(data);
 
-        dim_speciality   = specialty_satisfaction.dimension(function(d){return d.specialty;});
-        dim_module      = specialty_satisfaction.dimension(function(d){return d.module;});
-        dim_question    = specialty_satisfaction.dimension(function(d){return d.question;});
-        dim_year        = specialty_satisfaction.dimension(function(d){return d.year;});
-        dim_month       = specialty_satisfaction.dimension(function(d){return d.month;});
+        dim['speciality']   = cdata.dimension(function(d){return d.specialty;});
+        dim['module']     = cdata.dimension(function(d){return d.module;});
+        dim['question']    = cdata.dimension(function(d){return d.question;});
+        dim['date']      = cdata.dimension(function(d){return d.date;});
 
-        measure_average = specialty_satisfaction.dimension(function(d){return d.average;});
 
+        measure = {}
+        measure['average'] = cdata.dimension(function(d){return d.average;});
+
+        /*
         console.log(dim_speciality.group());
 
         dim_speciality.filter("surgery");
@@ -39,6 +43,7 @@
         console.log(dim_year.filter("2014").top(Infinity));
 
         console.log(dim_question.group().reduceSum(function(fact){return fact.average}).top(Infinity));
+        */
 
     });
 

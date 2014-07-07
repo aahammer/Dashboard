@@ -11,11 +11,43 @@
     background-color: #f5f5f5;
 }
 
+.gap {
+    margin-top:10px
+}
 .gridStyle {
     border: none;
     height: 100%;
-    margin-top:10px
+    border: 0px solid rgb(212,212,212);
+    background: #ffffff;
+
 }
 
-.row {
+
+.nav-pills > li {
+    float:none;
+    display:inline-block;
+    *display:inline; /* ie7 fix */
+    zoom:1; /* hasLayout ie7 trigger */
+}
+
+
+.nav-pills {
+    text-align:center;
+}
+
+.ngRow.even {
+    background-color: #ffffff;
+}
+.ngRow.odd {
+    background-color: #ffffff;
+}
+
+.ngRow.selected {
+    background-color: #eeeeff;
+}
+
+.ngTopPanel {
+
+    background-color: #c8520a;
+    color: #ffffff;
 }

@@ -1,0 +1,6 @@
+<ul class="nav {{nav_type}}">
+    <li ng-class="{active:tab.key == selected}" ng-repeat="tab in tabs">
+       <a  href="#/{{id}}/{{tab.key}}" ng-click="select(tab.key)"> {{tab.key}} </a>
+    </li>
+</ul>
+

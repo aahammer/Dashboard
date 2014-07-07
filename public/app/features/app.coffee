@@ -1,5 +1,25 @@
-define(['angular', 'services/StorageService', 'services/StateManagementService', 'services/DataService', 'controllers/TabListController', 'controllers/TabListController', 'controllers/TabListController', 'controllers/TabelListController', 'angular-ui-router', 'angular-ng-grid']
-    (angular, StorageService, StateManagementService, DataService, SelectionController, ModuleController, MeasureController, ItemTableController) ->
+define(['angular',
+        'services/StorageService',
+        'services/StateManagementService',
+        'services/DataService',
+        'services/RenderService',
+        'controllers/TabController',
+        'controllers/TabController',
+        'controllers/TabController',
+        'controllers/TableController',
+        'controllers/ChartController',
+        'angular-ui-router',
+        'angular-ng-grid']
+    (angular,
+     StorageService,
+     StateManagementService,
+     DataService,
+     RenderService,
+     SelectionController,
+     ModuleController,
+     MeasureController,
+     ItemTableController,
+     QuestionController) ->
 
         app = angular.module('Dashboard', ['ui.router','ngGrid'])
 
@@ -24,10 +44,32 @@ define(['angular', 'services/StorageService', 'services/StateManagementService',
             .constant('ItemTableSettings',
                 id: 'items'
             )
+            .constant('QuestionSettings',
+                id: 'questions'
+                frame:
+                        width: '100%'
+                        height: '50%'
+                        margin:
+                            left:25
+                            right:25
+                            top:0
+                            bottom:25
+                axis: [
+                    {
+                        id: 'xaxis'
+                        orientation: 'bottom'
+                    }
+                    {
+                        id: 'yaxis'
+                        orientation: 'left'
+                    }
+                ]
+            )
 
         app.factory('DataService', DataService('DataSettings'))
            .factory('StateManagementService', StateManagementService('Dummy'))
            .factory('StorageService', StorageService('StateSettings'))
+            .factory('RenderService', RenderService('Dummy'))
         #app.factory('DataService', ['$http' , ($http) -> return {name:"asg"}])
 
         app.controller( 'SelectionController', SelectionController('SelectionSettings'))
@@ -35,6 +77,7 @@ define(['angular', 'services/StorageService', 'services/StateManagementService',
             .controller( 'MeasureController', MeasureController('MeasureSettings'))
             .controller( 'ItemTableController', ItemTableController('ItemTableSettings'))
             .controller( 'Dummy',['StateManagementService', (StateManagementService) -> return])
+            .controller( 'QuestionController', QuestionController('QuestionSettings'))
 
 
 
@@ -51,22 +94,23 @@ define(['angular', 'services/StorageService', 'services/StateManagementService',
                     url: '/{view}/{selection}'
                     views:
                         'selection':
-                            templateUrl: 'views/TabListView.html'
+                            templateUrl: 'views/TabView.html'
                             controller: 'SelectionController'
                         'itemTable':
-                            templateUrl: 'views/TableListView.html'
+                            templateUrl: 'views/TableView.html'
                             controller: 'ItemTableController'
                         'module':
-                            templateUrl: 'views/TabListView.html'
+                            templateUrl: 'views/TabView.html'
                             controller: 'ModuleController'
                         'question':
                             templateUrl: 'views/default.html'
                         'light':
                             templateUrl: 'views/default.html'
-                        'barchart':
+                        'questions':
                             templateUrl: 'views/ChartView.html'
+                            controller: 'QuestionController'
                         'measure':
-                            templateUrl: 'views/TabListView.html'
+                            templateUrl: 'views/TabView.html'
                             controller: 'MeasureController'
                         'linechart':
                             templateUrl: 'views/default.html'

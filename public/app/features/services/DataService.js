@@ -3,61 +3,21 @@
   define(['crossfilter', 'd3'], function(crossfilter, d3) {
     return function($settings) {
       var DataService;
-      DataService = function($rootScope, $settings) {
-        var data, dataPoint, dimensions, hello, i, resetFilters, setupData, state;
-        console.log("asgd hfj");
-        state = {
-          selection: 'speciality',
-          item: null,
-          module: null,
-          question: null,
-          measure: 'average'
-        };
+      DataService = function($rootScope, $q, $settings) {
+
+        /* INIT VARIABLES */
+        var data, dataPoint, dimensions, into, loadData, optional, resetFilters, select, state, where;
+        state = {};
         data = {};
-        dataPoint = {};
-        hello = function() {
-          return "world";
-        };
-        setupData = function() {
-          d3.csv("data/data.csv", function(error, data) {
-            return data.forEach(function(d, i) {
-              d.total = +d.total;
-              d.date = Date.parse(d.date);
-              d.return_total = +d.return_total;
-              d.return_rate = +d.return_rate;
-              d.average = +d.average;
-              d.top = +d.top;
-              return d.nps = +d.nps;
-            });
-          });
-          return crossfilter(data);
-        };
-        data = setupData();
         dimensions = {};
-        dimensions['item'] = data.dimension(function(d) {
-          return d.item;
-        });
-        dimensions['module'] = data.dimension(function(d) {
-          return d.module;
-        });
-        dimensions['question'] = data.dimension(function(d) {
-          return d.question;
-        });
-        dimensions['date'] = data.dimension(function(d) {
-          return d.date;
-        });
-        resetFilters = function() {
-          var dim, _i, _len;
-          for (_i = 0, _len = dimensions.length; _i < _len; _i++) {
-            dim = dimensions[_i];
-            dim.filterAll();
-          }
-        };
+        dataPoint = {};
+
+        /* TODO Remove Startup Code dependencies */
         dataPoint['selections'] = [
           {
-            name: "Speciality"
+            key: "Speciality"
           }, {
-            name: "Station"
+            key: "Station"
           }
         ];
         dataPoint['items'] = [
@@ -74,112 +34,124 @@
         ];
         dataPoint['modules'] = [
           {
-            name: "Organisation"
+            key: "Organisation_"
           }, {
-            name: "Treatment"
+            key: "Treatment_"
           }, {
-            name: "Service"
+            key: "Service_"
           }
         ];
         dataPoint['measures'] = [
           {
-            id: 'average',
+            key: 'average_',
             name: "Average"
           }, {
-            id: 'top',
+            key: 'top',
             name: "Topscore"
           }, {
-            id: 'nps',
+            key: 'nps',
             name: "NPS"
           }
         ];
-        i = 0;
+
+        /* Support Functions */
+        where = function(where) {
+          var key, value;
+          for (key in where) {
+            value = where[key];
+            dimensions[key].filterAll();
+            dimensions[key].filter(value);
+            return;
+          }
+        };
+        select = function(select, rollup) {
+          var result;
+          result = [];
+          if ((rollup != null) && (rollup = 'count')) {
+            result = dimensions[select].group().reduceCount().all();
+          } else {
+            result = dimensions[select].filterAll().all();
+          }
+          return result;
+        };
+        into = function(into, result) {
+          dataPoint[into] = result;
+        };
+        optional = function(optional) {
+          if ((optional.keepFilter != null) && !optional.keepFilter) {
+            resetFilters();
+          }
+        };
+        loadData = function(source, deferred) {
+          return d3.csv("data/" + source + ".csv", function(error, file) {
+            var crossfilter_data;
+            file.forEach(function(d, i) {
+              d.total = +d.total;
+              d.date = Date.parse(d.date);
+              d.return_total = +d.return_total;
+              d.return_rate = +d.return_rate;
+              d.average = +d.average;
+              d.top = +d.top;
+              return d.nps = +d.nps;
+            });
+            crossfilter_data = crossfilter(file);
+            dimensions['item'] = crossfilter_data.dimension(function(d) {
+              return d.item;
+            });
+            dimensions['module'] = crossfilter_data.dimension(function(d) {
+              return d.module;
+            });
+            dimensions['question'] = crossfilter_data.dimension(function(d) {
+              return d.question;
+            });
+            dimensions['date'] = crossfilter_data.dimension(function(d) {
+              return d.date;
+            });
+            state.from = source;
+            return deferred.resolve(crossfilter_data);
+          });
+        };
+        resetFilters = function() {
+          var dim, _i, _len;
+          for (_i = 0, _len = dimensions.length; _i < _len; _i++) {
+            dim = dimensions[_i];
+            dim.filterAll();
+          }
+        };
+
+        /* GLOBAL INTERFACE */
         return {
+          dataPoint: dataPoint,
           provideData: function(query) {
-            console.log(query);
-            if (i === 1) {
-              dataPoint['selections'] = [
-                {
-                  name: "Hello"
-                }, {
-                  name: "Fuckin"
-                }, {
-                  name: "Change"
-                }
-              ];
+            var deferred;
+            deferred = $q.defer();
+            if ((query.from != null) && query.from !== state.from) {
+              loadData(query.from, deferred);
             }
-            if (i === 2) {
-              dataPoint['selections'] = [
-                {
-                  name: "How"
-                }, {
-                  name: "you"
-                }, {
-                  name: "Speciality"
+            deferred.promise.then(function() {
+              var result;
+              if (query.where != null) {
+                where(query.where);
+              }
+              result = [];
+              if (query.select != null) {
+                if (query.rollup != null) {
+                  result = select(query.select, query.rollup);
+                } else {
+                  result = select(query.select);
                 }
-              ];
-            }
-            return i = i + 1;
-
-            /*
-            
-            for k,v of ages
-            console.log k + " is " + v
-            
-            if query.from then
-                reload File if not already set
-            
-            for k,v in query.where
-                dimensions[k].filterAll()
-                if v != '*' then dimensions[k].filter(v)
-            
-            for k in query.select
-                data[k] = dimensions[?].top(Infinity)
-            
-             * set filters
-            for k,v in selection.iteritems()
-                dimensions[k].filterAll()
-                if v != '*' then dimensions[k].filter(v)
-            
-            for k,v in selection.iteritems()
-                 *data[k] = dimensions[?].filter.all()
-                console.log(k)
-             *selection.forEach( (d,i) -> console.log(d); connsole.log(i) )
-             */
-          },
-          changeSelection: function(selection) {},
-          changeItem: function(item) {
-            dimensions['item'].filterAll();
-            dimensions['item'].filter(item);
-          },
-          changeModule: function(module) {
-            dimensions['module'].filterAll();
-            dimensions['module'].filter(module);
-          },
-          changeMeasure: function(measure) {
-            dimensions['measure'].filterAll();
-            dimensions['measure'].filter(measure);
-          },
-          changeQuestion: function(question) {
-            dimensions['question'].filterAll();
-            dimensions['question'].filter(question);
-          },
-          dataPoint: dataPoint
-
-          /*
-          selections: [{name: "Speciality"},{name: "Station"}]
-          items: [ { id: "Surgery", total: 50 },
-                   { id: "Pediatric", total: 43},
-                   { id: "Psychology", total: 27}
-               ]
-          modules: [{name: "Organisation"},{name: "Treatment"},{name: "Service"}]
-          questions: ''
-          measures:[{id:'average', name: "Average"},{id:'top', name: "Topscore"},{id:'nps', name: "NPS"}]
-          history: ''
-           */
+              }
+              if (query.into != null) {
+                into(query.into, result);
+              }
+              if (query.optional != null) {
+                optional(query.optional);
+              }
+            });
+          }
         };
       };
-      return ['$rootScope', $settings, DataService];
+      return ['$rootScope', '$q', $settings, DataService];
     };
   });
 

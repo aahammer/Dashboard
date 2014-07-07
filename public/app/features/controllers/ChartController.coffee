@@ -1,43 +1,91 @@
-define([], () ->
+define(['d3', 'angular'], (d3, angular) ->
+
 
     ($settings) ->
-        ChartController = ($scope, $settings) ->
+        ChartController = ($rootScope, $scope, $window, rs, DataService, $settings) ->
 
-            ###
-                Basic Idea: A Chart Controller offers one area where data can be added for display
-                Several axis translations can be set for X and Y axis, A data object is later on assigned to axis
-                It can also be controlled if an axis should be drawn (how and where, including margins)
 
-                External configuration needed ->
-                    Axis Content
-                    Axis Display Definition
-                    Data Content ( x and y values, ... etc)
-                    Data Display Definition ( -> bar-X, bar-Y, lilne-X, line-Y, )
-                    General Settings ( draw grid, etc ..... )
-                    Data Display Method (?) -> configure different draw methods / maybe a d3 js draw service ?
+            ### STARTUP CODE ###
 
-                what do i need ?
-                i need data, axis, information about how/if to paint axis, and data
-                paint style
+            # INIT ID Infrastructure
+            id = $settings.id
+            $scope.id = id
+            $rootScope[id] = {}
 
-                Todo Scheiss viel arbeit
-            ###
+            # Init basic svg components according to settings
+            svg = d3.select("#"+id).append('svg')
+                        .attr('width', $settings.frame.width)
+                        .attr('height', $settings.frame.height)
+            frame = angular.element("#"+id)
+            
 
-            ### Store here information about old state , if changed !
-            $scope.$watch(  (() -> DataService[$scope.data]),
-                ((newVal, oldVal) ->
-                $scope.table = DataService[$scope.data]
+            data = [{average:59, questions:'Shit'}, {average:87, questions:'Holy'},{average:43, questions:'Is'},{average:100, questions:'It'},{average:88, questions:'ForReal'}]
+            valueScale = d3.scale.linear()
+            .domain([0,100])
+            .range([0,frame.width() - $settings.frame.margin.left - $settings.frame.margin.right])
+
+            categoryScale = d3.scale.ordinal()
+            .domain(['Shit', 'Holy','Is', 'It', 'ForReal'])
+            #.rangePoints([0, frame.height() - $settings.frame.margin.top - $settings.frame.margin.bottom ], 1)
+            .rangeRoundBands([0, frame.height() - $settings.frame.margin.top - $settings.frame.margin.bottom ],0.5,0.25)
+            .rangeRoundBands([0, frame.height() - $settings.frame.margin.top - $settings.frame.margin.bottom ],0.5,0.25)
+
+            rs.renderBars( svg.append('g').attr('transform','translate('+$settings.frame.margin.left+','+$settings.frame.margin.top+')')
+                data
+                'average'
+                valueScale
+                id
+                categoryScale
+                {
+                    selector: id+'.bar'
+                    layout: 'horizontal'
+                    max: 10
+                }
+            )
+
+
+            ### Interface ###
+            #
+            renderAxis = () ->
+
+                x_axis_g = svg.append('g').attr('transform', rs._translate($settings.frame.margin.left, frame.height() - $settings.frame.margin.bottom))
+                x_axis = d3.svg.axis()
+                .scale(valueScale)
+                .orient('bottom')
+                x_axis_g.call(x_axis)
+
+                y_axis_g = svg.append('g').attr('transform', rs._translate($settings.frame.margin.left, $settings.frame.margin.top))
+                y_axis = d3.svg.axis()
+                .scale(categoryScale)
+                .orient('left')
+                y_axis_g.call(y_axis)
+
+            render = () ->
                 return
-            ), true )
-            ###
+            #
+            ######
+
+            ### RUNTIME ACTIONS ###
+            #
+            $scope.$watch(  (() -> $window.innerWidth),
+                ((newVal, oldVal) ->
+                    #console.log(newVal)
+                    return
+                ), true )
+
+            $scope.$watch( (() -> DataService.dataPoint[id]),
+                ((newVal, oldVal) ->
+                    #data = DataService.dataPoint[id]
+                    renderAxis()
+                    return
+                ),
+                true
+                )
+            #
+            ######
 
             return
-        return [ "$scope", $settings, ChartController ]
-)
 
-### Howto inject different draw methods ?
-    drawData( width, height, translated data )
-    Controller aggregates all needed directives and data and translates data coordinates to screen coordinates
-    -> the individual drawing process is handled by draw providers in final coordinates
-    -> first drawing provider: bardrawer
-###
+        return ['$rootScope' , '$scope', '$window','RenderService', 'DataService', $settings, ChartController ]
+
+)

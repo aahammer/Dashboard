@@ -44,28 +44,46 @@
            .ticks(axis.ticks);
 
 
-    svg.append('g')
+    g = svg.append('g').attr('transform','translate('+page.margin.left+','+ page.margin.top +')');
+    g.append('g')
             .attr('transform', function() {
 
                 translate = '';
 
                 switch (axis.orient) {
                     case "top":
-                        translate = 'translate('+page.margin.left+','+ page.margin.top +')';
+                        translate = 'translate('+0+','+ 0 +')';
                         break;
                     case "bottom":
-                        translate = 'translate('+page.margin.left+','+ (page.margin.top + axis.y.length) +')';
+                        translate = 'translate('+0+','+ ( axis.y.length) +')';
                         break;
                     case "left":
-                        translate = 'translate('+page.margin.left+','+ page.margin.top +')';
+                        translate = 'translate('+0+','+ 0 +')';
                         break;
                     case "right":
-                        translate = 'translate('+(page.margin.left + axis.x.length)+','+ (page.margin.top) +')';
+                        translate = 'translate('+(axis.x.length)+','+ (0) +')';
                         break;
                 }
 
                 return translate ;
             }).call(axis_)
+
+
+    bars =    g.append('g');
+
+    _bars = bars.selectAll("rect.bar")
+            .data([20,40,60,80])
+            .enter()
+            .append('rect');
+
+    _bars.attr('x', function(d,i){ return d })
+            .attr('y', function(d,i){return i})
+            .attr('height', 500)
+            .attr('width', 5)
+
+
+
+
 
 
 

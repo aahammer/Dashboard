@@ -4,46 +4,82 @@
     return function($settings) {
       var StateManagementService;
       StateManagementService = function($rootScope, $settings, DataService) {
-        var urlParser;
+
+        /* Handle wrong URLS */
+
+        /* INIT Application */
+        var initApplication, urlParser;
         urlParser = document.createElement('a');
-        $rootScope.$on('$locationChangeSuccess', function(event, now, last) {
-          var query, urlParts;
-          urlParser.href = now;
-          urlParts = /#\/(\w*)\/(\w*)/g.exec(urlParser.hash);
-          DataService.provideData({
-            selection: urlParts[1],
-            item: urlParts[2]
-          });
-          query = {
-            select: ['item', 'module', 'measure', 'question'],
-            from: 'selection',
+        initApplication = function() {
+          var query_item, query_module, query_question;
+          query_item = {
+            select: 'item',
+            rollup: 'count',
+            from: 'speciality',
             where: {
-              item: 'Surgery',
-              module: 'Organisation',
-              measure: 'Average',
-              date: 'current()'
+              date: Date.parse('2014-05-01')
+            },
+            into: 'items',
+            optional: {
+              keepFilter: true
             }
           };
+          query_module = {
+            select: 'module',
+            rollup: 'count',
+            from: 'speciality',
+            into: 'modules',
+            optional: {
+              keepFilter: false
+            }
+          };
+          query_question = {
+            select: 'question',
+            from: 'speciality',
+            where: {
+              item: 'surgery',
+              module: 'organisation'
+            },
+            into: 'questions',
+            optional: {
+              keepFilter: false
+            }
+          };
+          DataService.provideData(query_item);
+          DataService.provideData(query_module);
+          DataService.provideData(query_question);
+        };
+        initApplication();
 
-          /* TODO Statemachine
-                         only change data in background and let views update automatically
-                         -> on selection change
-                            -> update all items + enforce state change for total redraw
-                         -> on item change
-                             -> update questions
-                             -> update timeseries
-                         -> on module change
-                             -> update measures
-                             -> update questions
-                             -> update timeseries
-                         -> on measure change
-                             -> update questions
-                             -> update timeseries
-                         -> on question change
-                             -> update timeseries
-                      * Maybe: Check for changes where there is no valid selection anymore and cascade default
-           */
+        /* RUNTIME */
+        $rootScope.$on('$locationChangeSuccess', function(event, now, last) {
+          var urlParts;
+          urlParser.href = now;
+          console.log(now);
+          urlParts = /#\/(\w*)\/(\w*)/g.exec(urlParser.hash);
+          switch ((urlParts[1] != null ? urlParts[1] : 'error')) {
+            case 'selections':
+              console.log('selections');
+              return;
+            case 'items':
+              console.log('items');
+              return;
+            case 'modules':
+              console.log('modules');
+              return;
+            case 'measures':
+              console.log('measures');
+              return;
+            case 'questions':
+              console.log('questions');
+              return;
+            default:
+              console.log('error in url part 1');
+          }
         });
+
+        /* GLOBAL INTERFACE */
+        return {};
       };
       return ['$rootScope', $settings, 'DataService', StateManagementService];
     };
