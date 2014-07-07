@@ -43,10 +43,10 @@
         ];
         dataPoint['measures'] = [
           {
-            key: 'average_',
+            key: 'total',
             name: "Average"
           }, {
-            key: 'top',
+            key: 'return_total',
             name: "Topscore"
           }, {
             key: 'nps',
@@ -75,10 +75,12 @@
           return result;
         };
         into = function(into, result) {
+          console.log(into);
+          console.log(result);
           dataPoint[into] = result;
         };
         optional = function(optional) {
-          if ((optional.keepFilter != null) && !optional.keepFilter) {
+          if ((optional.resetFilters != null) && optional.resetFilters) {
             resetFilters();
           }
         };
@@ -127,6 +129,8 @@
             deferred = $q.defer();
             if ((query.from != null) && query.from !== state.from) {
               loadData(query.from, deferred);
+            } else {
+              deferred.resolve();
             }
             deferred.promise.then(function() {
               var result;

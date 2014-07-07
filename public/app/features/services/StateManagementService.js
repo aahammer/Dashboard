@@ -11,7 +11,7 @@
         var initApplication, urlParser;
         urlParser = document.createElement('a');
         initApplication = function() {
-          var query_item, query_module, query_question;
+          var query_item, query_module, query_question, query_question_all;
           query_item = {
             select: 'item',
             rollup: 'count',
@@ -19,41 +19,39 @@
             where: {
               date: Date.parse('2014-05-01')
             },
-            into: 'items',
-            optional: {
-              keepFilter: true
-            }
+            into: 'items'
           };
           query_module = {
             select: 'module',
             rollup: 'count',
             from: 'speciality',
-            into: 'modules',
-            optional: {
-              keepFilter: false
-            }
+            into: 'modules'
           };
           query_question = {
             select: 'question',
+            rollup: 'count',
             from: 'speciality',
             where: {
               item: 'surgery',
               module: 'organisation'
             },
-            into: 'questions',
-            optional: {
-              keepFilter: false
-            }
+            into: 'questions'
+          };
+          query_question_all = {
+            select: 'question',
+            from: 'speciality',
+            into: 'questions_all'
           };
           DataService.provideData(query_item);
           DataService.provideData(query_module);
+          DataService.provideData(query_question_all);
           DataService.provideData(query_question);
         };
         initApplication();
 
         /* RUNTIME */
         $rootScope.$on('$locationChangeSuccess', function(event, now, last) {
-          var urlParts;
+          var query, urlParts;
           urlParser.href = now;
           console.log(now);
           urlParts = /#\/(\w*)\/(\w*)/g.exec(urlParser.hash);
@@ -65,10 +63,27 @@
               console.log('items');
               return;
             case 'modules':
-              console.log('modules');
+              console.log("URKL " + urlParts[2]);
+              query = {
+                select: 'question',
+                rollup: 'count',
+                from: 'speciality',
+                where: {
+                  module: urlParts[2]
+                },
+                into: 'questions'
+              };
+              DataService.provideData(query);
+              query = {
+                select: 'question',
+                from: 'speciality',
+                into: 'questions_all'
+              };
+              DataService.provideData(query);
+              console.log("sagas");
               return;
             case 'measures':
-              console.log('measures');
+              $rootScope['questions'].measure = urlParts[2];
               return;
             case 'questions':
               console.log('questions');

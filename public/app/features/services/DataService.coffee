@@ -19,7 +19,7 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
                 { id: "Psychology", total: 27}
             ]
             dataPoint['modules'] = [{key: "Organisation_"},{key: "Treatment_"},{key: "Service_"}]
-            dataPoint['measures'] = [{key:'average_', name: "Average"},{key:'top', name: "Topscore"},{key:'nps', name: "NPS"}]
+            dataPoint['measures'] = [{key:'total', name: "Average"},{key:'return_total', name: "Topscore"},{key:'nps', name: "NPS"}]
 
             ### Support Functions ###
             #
@@ -29,7 +29,6 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
             where = (where) ->
 
                 for key, value of where
-
                     dimensions[key].filterAll()
                     dimensions[key].filter(value)
                     return
@@ -43,11 +42,13 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
                     return result
 
             into = (into, result) ->
+                console.log(into)
+                console.log(result)
                 dataPoint[into] = result
                 return
 
             optional = (optional) ->
-                if optional.keepFilter? and !optional.keepFilter
+                if optional.resetFilters? and optional.resetFilters
                     resetFilters()
                     return
 
@@ -96,6 +97,7 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
 
                     if query.from? and query.from != state.from
                        loadData(query.from, deferred)
+                    else deferred.resolve()
 
                     deferred.promise.then(() ->
 

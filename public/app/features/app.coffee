@@ -50,7 +50,7 @@ define(['angular',
                         width: '100%'
                         height: '50%'
                         margin:
-                            left:25
+                            left:200
                             right:25
                             top:0
                             bottom:25

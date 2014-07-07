@@ -6,58 +6,66 @@
       ChartController = function($rootScope, $scope, $window, rs, DataService, $settings) {
 
         /* STARTUP CODE */
-        var categoryScale, data, frame, id, render, renderAxis, svg, valueScale;
+        var axis, categoryScale, data, frame, id, measure, panels, renderAxis, renderer, svg, valueScale, x_axis_g, y_axis_g;
         id = $settings.id;
         $scope.id = id;
         $rootScope[id] = {};
+        data = [];
+        panels = {};
+        renderer = {};
+        axis = {};
         svg = d3.select("#" + id).append('svg').attr('width', $settings.frame.width).attr('height', $settings.frame.height);
         frame = angular.element("#" + id);
-        data = [
-          {
-            average: 59,
-            questions: 'Shit'
-          }, {
-            average: 87,
-            questions: 'Holy'
-          }, {
-            average: 43,
-            questions: 'Is'
-          }, {
-            average: 100,
-            questions: 'It'
-          }, {
-            average: 88,
-            questions: 'ForReal'
-          }
-        ];
         valueScale = d3.scale.linear().domain([0, 100]).range([0, frame.width() - $settings.frame.margin.left - $settings.frame.margin.right]);
-        categoryScale = d3.scale.ordinal().domain(['Shit', 'Holy', 'Is', 'It', 'ForReal']).rangeRoundBands([0, frame.height() - $settings.frame.margin.top - $settings.frame.margin.bottom], 0.5, 0.25).rangeRoundBands([0, frame.height() - $settings.frame.margin.top - $settings.frame.margin.bottom], 0.5, 0.25);
-        rs.renderBars(svg.append('g').attr('transform', 'translate(' + $settings.frame.margin.left + ',' + $settings.frame.margin.top + ')'), data, 'average', valueScale, id, categoryScale, {
-          selector: id + '.bar',
+        categoryScale = d3.scale.ordinal().rangeRoundBands([0, frame.height() - $settings.frame.margin.top - $settings.frame.margin.bottom], 0.5, 0.25);
+        x_axis_g = svg.append('g').attr('transform', rs._translate($settings.frame.margin.left, frame.height() - $settings.frame.margin.bottom));
+        y_axis_g = svg.append('g').attr('transform', rs._translate($settings.frame.margin.left, $settings.frame.margin.top));
+        panels['bars'] = svg.append('g').attr('transform', rs._translate($settings.frame.margin.left, $settings.frame.margin.top));
+
+        /* Interface */
+        renderAxis = function() {
+          var x_axis, y_axis;
+          x_axis = d3.svg.axis().scale(valueScale).orient('bottom');
+          x_axis_g.call(x_axis);
+          y_axis = d3.svg.axis().scale(categoryScale).orient('left');
+          return y_axis_g.transition().duration(1000).call(y_axis);
+        };
+        measure = 'return_total';
+        renderer['bars'] = rs.barRenderer(panels['bars'], measure, valueScale, 'question', categoryScale, {
+          selector: '.' + id,
           layout: 'horizontal',
           max: 10
         });
 
-        /* Interface */
-        renderAxis = function() {
-          var x_axis, x_axis_g, y_axis, y_axis_g;
-          x_axis_g = svg.append('g').attr('transform', rs._translate($settings.frame.margin.left, frame.height() - $settings.frame.margin.bottom));
-          x_axis = d3.svg.axis().scale(valueScale).orient('bottom');
-          x_axis_g.call(x_axis);
-          y_axis_g = svg.append('g').attr('transform', rs._translate($settings.frame.margin.left, $settings.frame.margin.top));
-          y_axis = d3.svg.axis().scale(categoryScale).orient('left');
-          return y_axis_g.call(y_axis);
-        };
-        render = function() {};
-
         /* RUNTIME ACTIONS */
         $scope.$watch((function() {
-          return $window.innerWidth;
-        }), (function(newVal, oldVal) {}), true);
+          return $rootScope[id].measure;
+        }), (function(current, last) {
+          renderer['bars'].configure({
+            value: current
+          });
+          renderer['bars'].render(data);
+          console.log('hallo');
+        }), true);
         $scope.$watch((function() {
-          return DataService.dataPoint[id];
-        }), (function(newVal, oldVal) {
+          return $window.innerWidth;
+        }), (function(current, last) {
+          valueScale.range([0, frame.width() - $settings.frame.margin.left - $settings.frame.margin.right]);
+        }), true);
+        $scope.$watch((function() {
+          return DataService.dataPoint[id + '_all'];
+        }), (function(current, last) {
+          var domain;
+          data = DataService.dataPoint[id + '_all'];
+          domain = [];
+          angular.forEach(DataService.dataPoint[id], function(d) {
+            if (d.value > 0) {
+              return domain.push(d.key);
+            }
+          });
+          categoryScale.domain(domain).rangeRoundBands([0, frame.height() - $settings.frame.margin.top - $settings.frame.margin.bottom], 1 - (1 / domain.length), 2 / domain.length);
           renderAxis();
+          renderer['bars'].render(data);
         }), true);
       };
       return ['$rootScope', '$scope', '$window', 'RenderService', 'DataService', $settings, ChartController];
