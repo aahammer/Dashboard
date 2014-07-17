@@ -31,18 +31,6 @@
   });
 
   require(['angular', './app', 'assets/javascript/domReady'], function(angular, app, domReady) {
-
-    /*
-    app.config( ['$routeProvider',
-      ($routeProvider) -> $routeProvider.when('/' ,
-        controller :  'taglistController'
-        templateUrl:  'taglist/taglist.html'
-      ).otherwise( redirectTo: '/')
-    ])
-    
-    
-    domReady(-> angular.bootstrap(document, ['showoffApp']))
-     */
     domReady(function() {
       return angular.bootstrap(document, ['Dashboard']);
     });

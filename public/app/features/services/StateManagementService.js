@@ -71,7 +71,7 @@
                 where: {
                   module: urlParts[2]
                 },
-                into: 'questions'
+                into: 'questions_distinct'
               };
               DataService.provideData(query);
               query = {

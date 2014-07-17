@@ -2,24 +2,28 @@ define(['angular',
         'services/StorageService',
         'services/StateManagementService',
         'services/DataService',
-        'services/RenderService',
+        #'services/RenderService',
         'controllers/TabController',
         'controllers/TabController',
         'controllers/TabController',
         'controllers/TableController',
-        'controllers/ChartController',
+        'controllers/QuestionsController',
+        'controllers/QuestionByItemController',
+        'controllers/QuestionOverTimeController',
         'angular-ui-router',
         'angular-ng-grid']
     (angular,
      StorageService,
      StateManagementService,
      DataService,
-     RenderService,
+     #RenderService,
      SelectionController,
      ModuleController,
      MeasureController,
      ItemTableController,
-     QuestionController) ->
+     QuestionsController,
+     QuestionByItemController,
+     QuestionOverTimeController) ->
 
         app = angular.module('Dashboard', ['ui.router','ngGrid'])
 
@@ -44,32 +48,18 @@ define(['angular',
             .constant('ItemTableSettings',
                 id: 'items'
             )
-            .constant('QuestionSettings',
+            .constant('QuestionsSettings',
                 id: 'questions'
-                frame:
-                        width: '100%'
-                        height: '50%'
-                        margin:
-                            left:200
-                            right:25
-                            top:0
-                            bottom:25
-                axis: [
-                    {
-                        id: 'xaxis'
-                        orientation: 'bottom'
-                    }
-                    {
-                        id: 'yaxis'
-                        orientation: 'left'
-                    }
-                ]
+            )
+            .constant('QuestionByItemSettings',
+                id: 'questionByItem'
             )
 
         app.factory('DataService', DataService('DataSettings'))
            .factory('StateManagementService', StateManagementService('Dummy'))
            .factory('StorageService', StorageService('StateSettings'))
-            .factory('RenderService', RenderService('Dummy'))
+        #.factory('RenderService', RenderService('Dummy'))
+        #.factory('RenderService', RenderService('Dummy'))
         #app.factory('DataService', ['$http' , ($http) -> return {name:"asg"}])
 
         app.controller( 'SelectionController', SelectionController('SelectionSettings'))
@@ -77,9 +67,9 @@ define(['angular',
             .controller( 'MeasureController', MeasureController('MeasureSettings'))
             .controller( 'ItemTableController', ItemTableController('ItemTableSettings'))
             .controller( 'Dummy',['StateManagementService', (StateManagementService) -> return])
-            .controller( 'QuestionController', QuestionController('QuestionSettings'))
-
-
+            .controller( 'QuestionsController', QuestionsController('QuestionsSettings'))
+            .controller( 'QuestionByItemController', QuestionByItemController('QuestionByItemSettings'))
+            .controller( 'QuestionOverTimeController', QuestionOverTimeController('QuestionsSettings'))
 
         app.config(['$stateProvider', '$urlRouterProvider', ($stateProvider,$urlRouterProvider) ->
 
@@ -102,18 +92,22 @@ define(['angular',
                         'module':
                             templateUrl: 'views/TabView.html'
                             controller: 'ModuleController'
-                        'question':
-                            templateUrl: 'views/default.html'
-                        'light':
-                            templateUrl: 'views/default.html'
+                        #'question':
+                        #    templateUrl: 'views/default.html'
+                        #'light':
+                        #    templateUrl: 'views/default.html'
                         'questions':
                             templateUrl: 'views/ChartView.html'
-                            controller: 'QuestionController'
+                            controller: 'QuestionsController'
                         'measure':
                             templateUrl: 'views/TabView.html'
                             controller: 'MeasureController'
-                        'linechart':
-                            templateUrl: 'views/default.html'
+                        'questionByItem':
+                            templateUrl: 'views/ChartView.html'
+                            controller: 'QuestionByItemController'
+                        'questionOverTime':
+                            templateUrl: 'views/ChartView.html'
+                            controller: 'QuestionOverTimeController'
                     reloadOnSearch: false
                 )
 

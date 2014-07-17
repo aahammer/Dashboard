@@ -1,5 +1,6 @@
 define(['crossfilter','d3'], (crossfilter,d3) ->
 
+
     ($settings) ->
         DataService = ($rootScope, $q, $settings) ->
 
@@ -11,7 +12,6 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
             dataPoint = {}
 
 
-
             ### TODO Remove Startup Code dependencies ###
             dataPoint['selections'] = [{key: "Speciality"},{key: "Station"}]
             dataPoint['items'] = [ { id: "Surgery", total: 50 },
@@ -19,7 +19,7 @@ define(['crossfilter','d3'], (crossfilter,d3) ->
                 { id: "Psychology", total: 27}
             ]
             dataPoint['modules'] = [{key: "Organisation_"},{key: "Treatment_"},{key: "Service_"}]
-            dataPoint['measures'] = [{key:'total', name: "Average"},{key:'return_total', name: "Topscore"},{key:'nps', name: "NPS"}]
+            dataPoint['measures'] = [{key:'average', name: "Average"},{key:'top', name: "Topscore"},{key:'nps', name: "NPS"}]
 
             ### Support Functions ###
             #

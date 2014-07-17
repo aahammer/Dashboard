@@ -30,22 +30,9 @@ require([
 
 
   (angular,app,domReady) ->
-    ###
-    app.config( ['$routeProvider',
-      ($routeProvider) -> $routeProvider.when('/' ,
-        controller :  'taglistController'
-        templateUrl:  'taglist/taglist.html'
-      ).otherwise( redirectTo: '/')
-    ])
 
-
-    domReady(-> angular.bootstrap(document, ['showoffApp']))
-    ###
-    #app.run(['$state', ($state) -> $state.transitionTo('base')])
-
-    #console.log(app)
     domReady(-> angular.bootstrap(document, ['Dashboard']))
-    #domReady(-> angular.bootstrap(document, ['myUiRouter']))
+
 
     return
 )

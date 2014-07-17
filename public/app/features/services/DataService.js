@@ -43,10 +43,10 @@
         ];
         dataPoint['measures'] = [
           {
-            key: 'total',
+            key: 'average',
             name: "Average"
           }, {
-            key: 'return_total',
+            key: 'top',
             name: "Topscore"
           }, {
             key: 'nps',

@@ -1,19 +1,20 @@
 define(['d3'], (d3) ->
 
+    ###
+        -> benötigt start konfiguartian
+        -> werte können entweder statisch oder dynamisch über endpunkte gesetzt werden
+    ###
+
     ($settings) ->
 
         RenderService = ($settings) ->
 
             _translate = (x,y) -> 'translate(' + x + ',' + y + ')'
 
-            createAxis = (settings) ->
-
-                return
 
             barRenderer = (panel, value, valueScale, category, categoryScale, options) ->
 
                 this.value = value
-
 
                 if options.layout = 'horizontal'
                     valueDim = 'x'
@@ -31,6 +32,9 @@ define(['d3'], (d3) ->
                 render = (data) ->
 
                     value = this.value
+
+                    console.log(data)
+                    console.log(value + ' -> ' + category)
 
 
 
@@ -66,7 +70,6 @@ define(['d3'], (d3) ->
 
 
 
-
                     ## EXIT
                     panel.selectAll(options.selector)
                     .data(data, (d) -> d[category])
@@ -74,15 +77,9 @@ define(['d3'], (d3) ->
                     .remove()
 
 
-                    ###
-                    panel.selectAll(options.selector)
-                        .data(data, (d) -> d[category])
-                        .exit()
-                    ###
-
                 return {
 
-                    configure:configure
+                    setup:configure
                     render:render
 
                 }
@@ -90,8 +87,8 @@ define(['d3'], (d3) ->
 
             return  {
                 _translate: _translate
-                axis: createAxis
-                barRenderer: barRenderer
+                render : barRenderer
+                #know your own dataendpoint as setting
             }
 
         return [ '$rootScope', $settings, RenderService ]

@@ -16,24 +16,25 @@
 }
 .gridStyle {
     border: none;
-    height: 100%;
+    height: 50%;
     border: 0px solid rgb(212,212,212);
     background: #ffffff;
 
 }
 
-
+/*
 .nav-pills > li {
     float:none;
     display:inline-block;
-    *display:inline; /* ie7 fix */
-    zoom:1; /* hasLayout ie7 trigger */
+    *display:inline;
+    zoom:1;
 }
+
 
 
 .nav-pills {
     text-align:center;
-}
+}*/
 
 .ngRow.even {
     background-color: #ffffff;
@@ -50,4 +51,22 @@
 
     background-color: #c8520a;
     color: #ffffff;
+}
+
+.axis > path {
+    fill: none;
+    stroke: rgb(212,212,212);
+    stroke-width: 1px;
+}
+
+.axis {
+    font-weight: bold
+}
+
+.bars > rect {
+    fill: rgba(255, 169, 8, 0.900);
+}
+
+.bars > .isActive {
+    fill: #c8520a;
 }
