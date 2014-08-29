@@ -5,7 +5,7 @@ Since i also wanted to get some experience with solid web app framework, i decid
 
 ### The AngularJS / D3.js Dashboard Protoapp
 
-The AngularJS / D3.js Dashboard Protoapp on Heroku. The app displays some randomly generated hypothetic patient survey data in a healthcare setting.
+[The AngularJS / D3.js Dashboard Protoapp on Heroku](http://floating-temple-2493.herokuapp.com/). The app displays some randomly generated hypothetic patient survey data in a healthcare setting.
 All components are wired in order to offer a responsive navigation experience to the user. 
 
 
@@ -19,3 +19,10 @@ The StateService watches URL changes and calls appropriate DataService actions. 
 
 Another benefit for using AngularJS this way: Its adaptable to other libraries and components like ng-grid table representation.
 This makes it easy to mash-up different technologies in a single application.
+
+### Further technologies used:
+
+Backend is supported by the Scala Play Framework. I read quite alot of Scala Stuff to get used to the language and the Play Framwork. But, in the end, i skipped most features and used the Framework only for delivering static sample content. As great as Scala and Play maybe, the learning effort is not worth it to me - currently ,) My next project will use Node again.
+
+Crossfilter - worked great as an efficent client side data storage.
+
