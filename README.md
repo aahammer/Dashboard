@@ -1,4 +1,4 @@
-# A technology test combining AngularJS and D3.js into a modular dashboard front end
+# A technology test combining [AngularJS](https://angularjs.org/) and [D3.js](http://d3js.org/) into a modular dashboard front end
 
 After doing some minor data driven documents with D3.js, i searched for a more consistent way to combine different D3.js views into a single dashboard application.
 Since i also wanted to get some experience with solid web app framework, i decided to use AngularJS for a more modulized data driven document. 
@@ -20,7 +20,7 @@ The StateService watches URL changes and calls appropriate DataService actions. 
 Another benefit for using AngularJS this way: Its adaptable to other libraries and components like ng-grid table representation.
 This makes it easy to mash-up different technologies in a single application.
 
-### Further technologies used:
+### Further technology insights:
 
 Backend is supported by the [Scala Play Framework](https://www.playframework.com/). I read quite alot of Scala Stuff to get used to the language ( they got great learning ressources !) and the Play Framwork. But, in the end, i skipped most features and used the Framework only for delivering static sample content. As great as Scala and Play maybe, the learning effort is not worth it to me - currently ,) My next project will use Node again.
 
