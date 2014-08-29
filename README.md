@@ -22,7 +22,10 @@ This makes it easy to mash-up different technologies in a single application.
 
 ### Further technologies used:
 
-Backend is supported by the Scala Play Framework. I read quite alot of Scala Stuff to get used to the language and the Play Framwork. But, in the end, i skipped most features and used the Framework only for delivering static sample content. As great as Scala and Play maybe, the learning effort is not worth it to me - currently ,) My next project will use Node again.
+Backend is supported by the [Scala Play Framework](https://www.playframework.com/). I read quite alot of Scala Stuff to get used to the language ( they got great learning ressources !) and the Play Framwork. But, in the end, i skipped most features and used the Framework only for delivering static sample content. As great as Scala and Play maybe, the learning effort is not worth it to me - currently ,) My next project will use Node again.
 
-Crossfilter - worked great as an efficent client side data storage.
+[Crossfilter](http://square.github.io/crossfilter/) - worked great as an efficent client side data storage in the DataService
 
+[ng-grid](http://angular-ui.github.io/ng-grid/) - did its job, producing a table. The way its assumed to be configured did not always work straight with my way to modularize the application
+
+[angular-ui-router](https://github.com/angular-ui/ui-router) - Great improvement over the old AngularJs router. Also i have to take a look a Angulars new Router implementation at some time.
