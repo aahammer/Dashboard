@@ -1,4 +1,9 @@
-This is your new Play application
-=====================================
+# A technology test combining AngularJS and D3.js into a modular dashboard front end
 
-This file will be packaged with your application, when using `play dist`.
+After doing some minor data driven documents with D3.js, i searched for a more consistent way to combine different D3.js views into a single dashboard application.
+Since i also wanted to get some experience with solid web app framework, i decided to use AngularJS for a more modulized data driven document. 
+
+### The AngularJS / D3.js Dashboard Protoapp
+
+The AngularJS / D3.js Dashboard Protoapp on Heroku. The app displays some randomly generated patient survey data in a medical setting.
+All components are wired in order to offer a reactive navigation experience to the user.
