@@ -231,8 +231,8 @@ define([], () ->
             ######
 
             broadcastInitialState = () ->
-                console.log("broadcasting")
-                state.item = "SDGSG"
+                #console.log("broadcasting")
+                #state.item = "SDGSG"
                 #tmp = state.item
                 #state.item = ''
                 #state.item = tmp

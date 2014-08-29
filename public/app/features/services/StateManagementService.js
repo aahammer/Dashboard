@@ -204,10 +204,7 @@
               console.log('error in url part 1');
           }
         });
-        broadcastInitialState = function() {
-          console.log("broadcasting");
-          return state.item = "SDGSG";
-        };
+        broadcastInitialState = function() {};
 
         /* GLOBAL INTERFACE */
         return {
