@@ -5,12 +5,7 @@ Since i also wanted to get some experience with solid web app framework, i decid
 
 ### The AngularJS / D3.js Dashboard Protoapp
 
-
-[The AngularJS / D3.js Dashboard Protoapp on Heroku](http://floating-temple-2493.herokuapp.com/). The app displays some randomly generated hypothetic patient survey data in a healthcare setting.
-All components are wired in order to offer a responsive navigation experience to the user. 
-
-![angular-d3js-dashboard](https://media.giphy.com/media/jU250MNxnWZRQs3PHF/giphy.gif)
-
+This App was Hosted on Heroku
 
 ### Results
 
